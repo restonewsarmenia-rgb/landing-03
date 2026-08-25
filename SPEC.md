@@ -195,3 +195,15 @@ measurement proceeds; updated in batches.
 - Operator panel list dividers exact stroke color not isolated
 - Form submit button: 3 stacked drop shadows, exact x/y/blur/spread/color not isolated
 - Footer divider exact color/hair-d and color/hair-l hex values not isolated
+
+## Resolved values (follow-up pass) - update to Open items above
+
+- color/form-teal = #00C9B6 100% (used in mixed-fill text runs, exact glyph not identified)
+- color/form-cap = #8A93A8 100% (footer/columns caption text color)
+- color/form-chk-bg = #2A2A2A 100% (checkbox background)
+- color/form-agree = #9AA3AE 100% (consent text base color, link part is #FF4C00)
+- color/btn-text = #FFFFFF 100% (submit button label)
+- color/hair-d = #000000 60% (divider base line)
+- color/hair-l = #FFFFFF 6% (divider highlight line, sits under/over hair-d for a subtle bevel)
+- Additional divider found: inside Form card, Group 88 > Linia / Linia-blik, X 29, Y 109-110 (rel card), W 1129, H 1, same hair-d/hair-l pair as footer divider - separates heading area from the field grid
+- Still not isolated (kept in UNKNOWNS.md): Group 85 icon gradient stops, Group 84 language switch per-label colors, operator panel list-row divider color, submit button's 3 stacked drop-shadow parameters
