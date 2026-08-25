@@ -1,0 +1,97 @@
+:root {
+  /* Base surface colors */
+  --color-bg: #212121;
+  --color-card: #212121;
+  --color-card-gradient-end: #2F2F2F;
+  --color-white: #FFFFFF;
+
+  /* Brand accent */
+  --color-accent-orange: #FF4C00;
+
+  /* Text colors */
+  --color-ink-2: #C9C9CF;
+  --color-svc-title: #E8EDF4;
+  --color-svc-text: #C3CBD8;
+  --color-about-text: #C3CBD8;
+  --color-about-dim: #98A2B3;
+  --color-form-cap: #8A93A8;
+  --color-form-teal: #00C9B6;
+  --color-form-agree: #9AA3AE;
+  --color-btn-text: #FFFFFF;
+
+  /* Component surfaces */
+  --color-form-chk-bg: #2A2A2A;
+  --color-header-cta-bg: #111111;
+  --color-footer-social-icon: #79839A;
+
+  /* Hairline dividers */
+  --color-hair-dark: rgba(0, 0, 0, 0.6);
+  --color-hair-light: rgba(255, 255, 255, 0.06);
+
+  /* Shadows (opacity baked in as rgba) */
+  --shadow-header: 0 5px 6.2px 0 rgba(0, 0, 0, 0.63);
+  --shadow-header-cta-text: 0 1px 2px 0 rgba(0, 0, 0, 0.8);
+
+  /* Font families */
+  --font-manrope: 'Manrope', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+  --font-open-sans: 'Open Sans', sans-serif;
+  --font-noto-arabic: 'Noto Sans Arabic', sans-serif;
+
+  /* Font sizes */
+  --fs-nav: 14px;
+  --fs-eyebrow: 19px;
+  --fs-lead: 16px;
+  --fs-h1: 46px;
+  --fs-svc-title: 21px;
+  --fs-svc-subtitle: 14px;
+  --fs-svc-item: 18px;
+  --fs-about-label: 15px;
+  --fs-about-heading: 27px;
+  --fs-about-paragraph: 18px;
+  --fs-form-heading: 24px;
+  --fs-form-subtext: 14px;
+  --fs-form-label: 12px;
+  --fs-form-btn: 14px;
+  --fs-footer-col-heading: 12px;
+  --fs-footer-col-item: 11px;
+  --fs-footer-copyright: 11px;
+  --fs-header-cta: 14px;
+
+  /* Font weights */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  /* Line heights */
+  --lh-nav: 23.2px;
+  --lh-svc-title: 32px;
+  --lh-svc-item: 48px;
+  --lh-about-heading: 31.5px;
+  --lh-about-paragraph: 23px;
+  --lh-form-heading: 28.5px;
+  --lh-tight: 12px;
+  --lh-tight-2: 12.8px;
+
+  /* Letter spacing */
+  --ls-header-cta: 0.5px;
+  --ls-h1: -1.68px;
+  --ls-about-label: 0.45px;
+
+  /* Radii */
+  --radius-nav-pill: 10px;
+  --radius-header-plate-bottom: 80px;
+  --radius-header-cta: 12px;
+  --radius-lang-pill: 999px;
+  --radius-svc-pill: 20px;
+  --radius-svc-card: 8px;
+  --radius-photo: 7.5px;
+  --radius-form-card: 27px;
+  --radius-form-input: 16.5px;
+  --radius-form-checkbox: 4.5px;
+  --radius-footer-card: 27px;
+  --radius-footer-social: 15px;
+}
