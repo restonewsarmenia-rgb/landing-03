@@ -4,187 +4,444 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1440">
 <title>Globus Contact Center — Контакт-центр полного цикла</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script>
+// Resolve the theme before first paint: a stored choice wins, otherwise the OS.
+// Inline and before the stylesheets, so no frame is ever painted in the wrong theme.
+(function(){try{var t=localStorage.getItem("theme");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
+</script>
+<link rel="preload" href="fonts/Manrope-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="page">
 
-<header class="header">
-  <img class="header__logo" src="assets/01-header-logo.png" alt="Globus Contact Center">
-  <div class="header__nav-and-actions">
-    <nav class="nav-pill">
-      <button class="nav-pill__item">Call-центр</button>
-      <button class="nav-pill__item">Услуги <span class="chevron">⌄</span></button>
-      <button class="nav-pill__item">О компании <span class="chevron">⌄</span></button>
-      <button class="nav-pill__item">Карьера у нас</button>
-    </nav>
-    <button class="icon-button" aria-label="Меню">☷</button>
-    <div class="lang-switch">
-      <button class="lang-switch__item is-active">RU</button>
-      <button class="lang-switch__item">EN</button>
-    </div>
-    <button class="cta-button">Заказать Звонокнок</button>
+<header class="header" data-node-id="152:5046">
+  <div class="header__plate" data-node-id="152:5047"></div>
+
+  <div class="header__logo" data-node-id="152:5074">
+    <img class="is-on-dark" src="assets/01-header-logo.png" alt="Globus Contact Center">
+    <img class="is-on-light" src="assets/01-header-logo-on-light.png" alt="" aria-hidden="true">
   </div>
+
+  <div class="nav-pill nav-pill--1" data-node-id="152:5093">
+    <p class="nav-pill__label nav-pill__label--1" data-node-id="152:5094">Call-центр</p>
+  </div>
+  <div class="nav-pill nav-pill--2" data-node-id="152:5096">
+    <p class="nav-pill__chevron nav-pill__chevron--2" data-node-id="152:5097" aria-hidden="true">▼</p>
+    <p class="nav-pill__label nav-pill__label--2" data-node-id="152:5098">Услуги</p>
+  </div>
+  <div class="nav-pill nav-pill--3" data-node-id="152:5100">
+    <div class="nav-pill__group" data-node-id="152:5101"></div>
+    <p class="nav-pill__chevron nav-pill__chevron--3" data-node-id="152:5102" aria-hidden="true">▼</p>
+    <p class="nav-pill__label nav-pill__label--3" data-node-id="152:5103">О компании</p>
+  </div>
+  <div class="nav-pill nav-pill--4" data-node-id="152:5106">
+    <p class="nav-pill__label nav-pill__label--4" data-node-id="152:5107">Карьера у нас</p>
+  </div>
+
+  <div class="lang-switch" data-node-id="152:5052">
+    <p class="lang-switch__item lang-switch__item--ru" data-node-id="152:5053">RU</p>
+    <p class="lang-switch__item lang-switch__item--dot" data-node-id="152:5054">·</p>
+    <p class="lang-switch__item lang-switch__item--en" data-node-id="152:5055">EN</p>
+  </div>
+
+  <button class="header__icon-btn" type="button" id="theme-toggle"
+          aria-label="Переключить тему" aria-pressed="false" data-node-id="152:5049">
+    <span class="header__glow"><img src="assets/header-previous-button.svg" alt=""></span>
+  </button>
+  <div class="header__icon-vector" data-node-id="152:5109" aria-hidden="true">
+    <span class="header__glow">
+      <img class="is-on-dark" src="assets/header-vector.svg" alt="">
+      <svg class="is-on-light" preserveAspectRatio="none" overflow="visible" width="19" height="15.7781"
+           viewBox="0 0 19 15.7781" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Sun. Figma carries no sun glyph, so it is drawn here: one filled core and
+             eight rays at exact 45 degree steps, in the moon's own viewBox so it lands in
+             the identical box. Stroke width 2 and round caps are the moon's; the colour is
+             currentColor, which the container takes from --color-ink-2, the same token the
+             moon's stroke matches in each theme. -->
+        <circle cx="9.5" cy="7.8891" r="3.0" fill="currentColor"/>
+        <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="14.300" y1="7.889" x2="16.200" y2="7.889"/>
+          <line x1="12.894" y1="11.283" x2="14.238" y2="12.627"/>
+          <line x1="9.500" y1="12.689" x2="9.500" y2="14.589"/>
+          <line x1="6.106" y1="11.283" x2="4.762" y2="12.627"/>
+          <line x1="4.700" y1="7.889" x2="2.800" y2="7.889"/>
+          <line x1="6.106" y1="4.495" x2="4.762" y2="3.151"/>
+          <line x1="9.500" y1="3.089" x2="9.500" y2="1.189"/>
+          <line x1="12.894" y1="4.495" x2="14.238" y2="3.151"/>
+        </g>
+      </svg>
+    </span>
+  </div>
+
+  <button class="header__cta" type="button" data-node-id="176:7558">
+    <span class="header__cta-face" data-node-id="176:7559"></span>
+    <span class="header__cta-tick" data-node-id="176:7566"><i></i></span>
+    <span class="header__cta-label" data-node-id="176:7565"><span>Заказать звонокнок</span></span>
+  </button>
 </header>
 
-<section class="hero">
-  <div class="hero__content">
-    <p class="hero__eyebrow">КОНТАКТ-ЦЕНТР ПОЛНОГО ЦИКЛА - ЕРЕВАН, АРМЕНИЯ</p>
-    <h1 class="hero__heading">Мы принимаем ваши <span class="is-accent">звонки</span> и <span class="is-accent">звоним</span> за вас.</h1>
-    <p class="hero__lead"><span class="is-bold">www.GlobusContactCenter.com</span> — аутсорсинговый контакт-центр в Ереване. Горячая линия, приём заказов, виртуальный офис, холодные звонки, обзвон базы. Каждый разговор записан, каждая цифра — в вашем личном кабинете. <span class="is-bold">Армения, СНГ, Залив, Европа, США и Канада, Китай.</span></p>
-  </div>
-  <div class="hero__image-wrap">
-    <img class="hero__image" src="assets/02-hero-globe.png" alt="Силуэт от оператора с наушниками и глобусом">
-  </div>
-</section>
+<section class="hero" data-node-id="96:6818">
+  <h1 class="hero__heading" data-node-id="96:6819"><span class="hero__heading-text"><span class="is-sm is-white">Мы принимаем </span><span class="is-lg is-white">ваши</span><span class="is-lg"> </span><span class="is-lg is-accent is-tight">звонки</span><br><span class="is-sm is-white">и</span><span class="is-sm"> </span><span class="is-sm is-accent is-tight">звоним</span><span class="is-sm"> </span><span class="is-sm is-white">за вас</span><span class="is-sm is-accent">.</span></span></h1>
 
-<section class="operator-panels">
-  <div class="operator-panel">
-    <img class="operator-panel__photo" src="assets/04-operator-incoming.png" alt="Оператор принимает входящий звонок">
-    <div class="operator-panel__badge">
-      <p class="operator-panel__badge-text">КЛИЕНТ ЗВОНИТ ВАМ — ТРУБКУ БЕРЁМ МЫ</p>
-    </div>
-    <div class="operator-panel__card">
-      <p class="operator-panel__card-title">СПИСОК УСЛУГ</p>
-      <p class="operator-panel__card-subtitle">ВХОДЯЩИЕ ЗВОНКИ ▾</p>
-      <ul class="operator-panel__list">
-        <li class="operator-panel__list-item">ГОРЯЧАЯ ЛИНИЯ</li>
-        <li class="operator-panel__list-item">ПРИЁМ ЗАКАЗОВ</li>
-        <li class="operator-panel__list-item">ВИРТУАЛЬНЫЙ ОФИС</li>
-                <li class="operator-panel__list-item">ОБРАБОТКА ВХОДЯЩИХ ЗВОНКОВ</li>
-      </ul>
-    </div>
-  </div>
-  <div class="operator-panel">
-    <img class="operator-panel__photo" src="assets/03-operator-outgoing.png" alt="Оператор выполняет исходящий звонок">
-    <div class="operator-panel__badge">
-            <p class="operator-panel__badge-text">ЗВОНИМ МЫ — ВЫ ПОЛУЧАЕТЕ РЕЗУЛЬТАТ</p>
-    </div>
-    <div class="operator-panel__card">
-      <p class="operator-panel__card-title">СПИСОК УСЛУГ</p>
-      <p class="operator-panel__card-subtitle">ИСХОДЯЩИЕ ЗВОНКИ ▾</p>
-      <ul class="operator-panel__list">
-        <li class="operator-panel__list-item">ПРОДАЖИ ПО ТЕЛЕФОНУ</li>
-        <li class="operator-panel__list-item">ПОИСК КЛИЕНТОВ</li>
-                <li class="operator-panel__list-item">ХОЛОДНЫЕ ЗВОНКИ</li>
-        <li class="operator-panel__list-item">ОБЗВОН КЛИЕНТОВ</li>
-      </ul>
+  <p class="hero__eyebrow" data-node-id="96:6821">КОНТАКТ-ЦЕНТР ПОЛНОГО ЦИКЛА · ЕРЕВАН, АРМЕНИЯ</p>
+
+  <p class="hero__lead" data-node-id="96:6820"><span class="is-url is-low">w</span><span class="is-url is-cap">ww.GlobusContactCenter.</span><span class="is-url is-low">com</span><span class="is-gap"> </span><span class="is-body">— аутсорсинговый контакт-центр в Ереване. Горячая линия, приём заказов, виртуальный офис, холодные звонки, обзвон базы. Каждый разговор записан, каждая цифра — в вашем личном кабинете. </span><span class="is-geo">Армения</span><span class="is-geo">, </span><span class="is-geo">СНГ, Залив, Европа, США и Канада, Китай.</span></p>
+
+  <div class="hero__sign" data-node-id="96:6822">
+    <div class="hero__globe" data-node-id="96:6823">
+      <img src="assets/02-hero-globe.png" alt="Оператор с наушниками и глобус">
     </div>
   </div>
 </section>
 
-<section class="about">
+<section class="svc" data-node-id="96:6738">
+  <picture>
+    <source type="image/avif" srcset="assets/04-operator-incoming-395.avif 395w, assets/04-operator-incoming-790.avif 790w, assets/04-operator-incoming-1185.avif 1185w, assets/04-operator-incoming-1535.avif 1535w" sizes="395px">
+    <source type="image/webp" srcset="assets/04-operator-incoming-395.webp 395w, assets/04-operator-incoming-790.webp 790w, assets/04-operator-incoming-1185.webp 1185w, assets/04-operator-incoming-1535.webp 1535w" sizes="395px">
+    <img class="svc__photo svc__photo--in" src="assets/04-operator-incoming-790.png" srcset="assets/04-operator-incoming-395.png 395w, assets/04-operator-incoming-790.png 790w" sizes="395px" width="395" height="264" alt="Оператор принимает входящий звонок">
+  </picture>
+  <div class="svc__card svc__card--in" data-node-id="96:6762">
+    <p class="svc__card-title">Список услуг</p>
+    <p class="svc__card-sub svc__card-sub--in">ВХОДЯЩИЕ ЗВОНКИ</p>
+    <span class="svc__chev svc__chev--in" aria-hidden="true"><svg width="14" height="9" viewBox="0 0 14 9" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M6.42359 8.7408C6.48782 8.82075 6.57374 8.88611 6.67402 8.93126C6.77425 8.97641 6.88581 9 6.99904 9C7.11231 9 7.22387 8.97641 7.3241 8.93126C7.42433 8.88611 7.51026 8.82075 7.57448 8.7408L13.875 0.941336C13.9479 0.851378 13.9907 0.746006 13.9986 0.636679C14.0066 0.527351 13.9794 0.418245 13.9201 0.321214C13.8608 0.224183 13.7716 0.142939 13.6622 0.0863089C13.5528 0.0296788 13.4274 -0.000171795 13.2996 7.43741e-07H0.698556C0.571038 0.00045216 0.446075 0.0306866 0.337106 0.0874526C0.228137 0.144218 0.139286 0.225368 0.0801075 0.322174C0.0209289 0.41898 -0.00633771 0.527783 0.00123966 0.636874C0.00881702 0.745969 0.0509517 0.851231 0.123112 0.941336L6.42359 8.7408Z" fill="#FF4C00"/></svg></span>
+    <i class="svc__sep svc__sep--1"></i>
+    <i class="svc__sep svc__sep--2"></i>
+    <i class="svc__sep svc__sep--3"></i>
+    <i class="svc__sep svc__sep--4"></i>
+    <p class="svc__item svc__item--1">Горячая линия</p>
+    <p class="svc__item svc__item--2">Приём заказов</p>
+    <p class="svc__item svc__item--3">Виртуальный офис</p>
+    <p class="svc__item svc__item--4">Обработка входящих звонков</p>
+  </div>
+  <div class="svc__pill svc__pill--in" data-node-id="96:6778"></div>
+  <p class="svc__pill-text svc__pill-text--in">Клиент звонит вам — трубку берём мы</p>
+
+  <picture>
+    <source type="image/avif" srcset="assets/03-operator-outgoing-392.avif 392w, assets/03-operator-outgoing-784.avif 784w, assets/03-operator-outgoing-1176.avif 1176w, assets/03-operator-outgoing-1568.avif 1568w" sizes="392px">
+    <source type="image/webp" srcset="assets/03-operator-outgoing-392.webp 392w, assets/03-operator-outgoing-784.webp 784w, assets/03-operator-outgoing-1176.webp 1176w, assets/03-operator-outgoing-1568.webp 1568w" sizes="392px">
+    <img class="svc__photo svc__photo--out" src="assets/03-operator-outgoing-784.png" srcset="assets/03-operator-outgoing-392.png 392w, assets/03-operator-outgoing-784.png 784w" sizes="392px" width="392" height="262" alt="Оператор выполняет исходящий звонок">
+  </picture>
+  <div class="svc__card svc__card--out" data-node-id="96:6743">
+    <p class="svc__card-title">Список услуг</p>
+    <p class="svc__card-sub svc__card-sub--out">ИСХОДЯЩИЕ ЗВОНКИ</p>
+    <span class="svc__chev svc__chev--out" aria-hidden="true"><svg width="14" height="9" viewBox="0 0 14 9" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M6.42359 8.7408C6.48782 8.82075 6.57374 8.88611 6.67402 8.93126C6.77425 8.97641 6.88581 9 6.99904 9C7.11231 9 7.22387 8.97641 7.3241 8.93126C7.42433 8.88611 7.51026 8.82075 7.57448 8.7408L13.875 0.941336C13.9479 0.851378 13.9907 0.746006 13.9986 0.636679C14.0066 0.527351 13.9794 0.418245 13.9201 0.321214C13.8608 0.224183 13.7716 0.142939 13.6622 0.0863089C13.5528 0.0296788 13.4274 -0.000171795 13.2996 7.43741e-07H0.698556C0.571038 0.00045216 0.446075 0.0306866 0.337106 0.0874526C0.228137 0.144218 0.139286 0.225368 0.0801075 0.322174C0.0209289 0.41898 -0.00633771 0.527783 0.00123966 0.636874C0.00881702 0.745969 0.0509517 0.851231 0.123112 0.941336L6.42359 8.7408Z" fill="#FF4C00"/></svg></span>
+    <i class="svc__sep svc__sep--1"></i>
+    <i class="svc__sep svc__sep--2"></i>
+    <i class="svc__sep svc__sep--3"></i>
+    <i class="svc__sep svc__sep--4"></i>
+    <p class="svc__item svc__item--1">Продажи по телефону</p>
+    <p class="svc__item svc__item--2">Поиск клиентов</p>
+    <p class="svc__item svc__item--3">Холодные звонки</p>
+    <p class="svc__item svc__item--4">Обзвон клиентов</p>
+  </div>
+  <div class="svc__pill svc__pill--out" data-node-id="96:6785"></div>
+  <p class="svc__pill-text svc__pill-text--out">Звоним мы — вы получаете результат</p>
+</section>
+
+<section class="about" data-node-id="96:6704">
+  <div class="about__frame about__frame--1" data-node-id="96:6713"></div>
+  <div class="about__frame about__frame--2" data-node-id="96:6714"></div>
+  <div class="about__frame about__frame--3" data-node-id="96:6706"></div>
   <p class="about__label">О КОМПАНИИ</p>
   <h2 class="about__heading">За пультом живые люди</h2>
   <p class="about__paragraph">Свой офис в Ереване, Маршала Бабаджаняна 38. Штатные операторы, одна постоянная команда — не фрилансеры и не подрядчики.Работаем на русском, армянском и английском: Армения, СНГ, Европа, США и Канада, Залив, Китай. Каждый разговор записан — можно прослушать любой. На заявку отвечаем за 4 рабочих часа.</p>
-  <div class="about__photos">
-    <img class="about__photo" src="assets/06-office-exterior.png" alt="внешний вид офиса">
-    <img class="about__photo" src="assets/07-office-interior.png" alt="работа операторов в колл-центре">
-    <img class="about__photo" src="assets/08-agent-photo.png" alt="портрет оператора в наушниках">
-  </div>
+  <picture>
+    <source type="image/avif" srcset="assets/06-office-exterior.avif">
+    <source type="image/webp" srcset="assets/06-office-exterior.webp">
+    <img class="about__photo about__photo--1" src="assets/06-office-exterior.png" alt="внешний вид офиса" data-node-id="96:6715" loading="lazy" decoding="async">
+  </picture>
+  <picture>
+    <source type="image/avif" srcset="assets/07-office-interior.avif">
+    <source type="image/webp" srcset="assets/07-office-interior.webp">
+    <img class="about__photo about__photo--2" src="assets/07-office-interior.png" alt="работа операторов в колл-центре" data-node-id="96:6716" loading="lazy" decoding="async">
+  </picture>
+  <picture>
+    <source type="image/avif" srcset="assets/08-agent-photo.avif">
+    <source type="image/webp" srcset="assets/08-agent-photo.webp">
+    <img class="about__photo about__photo--3" src="assets/08-agent-photo.png" alt="портрет оператора в наушниках" data-node-id="96:6717" loading="lazy" decoding="async">
+  </picture>
 </section>
-
-<section class="form-card">
+<section class="form-card" data-node-id="146:4966">
   <h2 class="form-card__heading">Возьмём ваши звонки на себя</h2>
-  <p class="form-card__subtext"><span>Расскажите задачу — вернёмся с планом, ценой и датой запуска.</span><span>Одна страница, без презентаций на сорок слайдов.</span></p>
-  <hr class="form-card__divider">
+  <p class="form-card__subtext">Расскажите задачу — вернёмся с планом, ценой и датой запуска. Одна страница, без презентаций на сорок слайдов.</p>
+  <i class="form-card__hair form-card__hair--dark" data-node-id="178:3492"></i>
+  <i class="form-card__hair form-card__hair--light" data-node-id="178:3493"></i>
+
   <form>
-    <div class="form-card__grid">
-      <div class="form-field">
-        <label class="form-field__label" for="f-name">Имя <span class="is-required">*</span></label>
-        <input class="form-field__input" type="text" id="f-name" name="name" required>
-      </div>
-      <div class="form-field">
-        <label class="form-field__label" for="f-email">Email <span class="is-required">*</span></label>
-        <input class="form-field__input" type="email" id="f-email" name="email" required>
-      </div>
-      <div class="form-field">
-        <label class="form-field__label" for="f-phone">Телефон <span class="is-required">*</span></label>
-        <input class="form-field__input" type="tel" id="f-phone" name="phone" required>
-      </div>
-      <div class="form-field">
-        <label class="form-field__label" for="f-country">Страна или регион</label>
-        <select class="form-field__select" id="f-country" name="country">
-          <option value="">Выберите страну</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label class="form-field__label" for="f-service">Какая услуга</label>
-        <select class="form-field__select" id="f-service" name="service">
-          <option value="">Выберите услугу</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label class="form-field__label" for="f-lang">Язык обзвона</label>
-        <select class="form-field__select" id="f-lang" name="lang">
-          <option value="">Выберите язык</option>
-        </select>
-      </div>
+    <p class="form__label form__label--name" data-node-id="146:4970"><span>Имя</span><span class="is-space"> </span><span class="is-required">*</span></p>
+    <div class="form__field form__field--name" data-node-id="146:4971">
+      <input class="form__input" type="text" name="name" aria-label="Имя" required>
     </div>
-    <div class="form-card__consent-row">
-      <input class="checkbox" type="checkbox" id="f-consent" name="consent">
-      <label class="form-card__consent-text" for="f-consent">Согласен на обработку моих данных — <a href="#">политика конфиденциальности</a></label>
+
+    <p class="form__label form__label--email" data-node-id="146:4972"><span>Email</span><span class="is-space"> </span><span class="is-required">*</span></p>
+    <div class="form__field form__field--email" data-node-id="146:4973">
+      <input class="form__input" type="email" name="email" aria-label="Email" required>
     </div>
-    <div class="form-card__submit-row">
-      <button class="submit-button" type="submit">Заказать звонок</button>
+
+    <p class="form__label form__label--phone" data-node-id="146:4975"><span>Телефон</span><span class="is-space"> </span><span class="is-required">*</span></p>
+    <div class="form__field form__field--phone" data-node-id="146:4976">
+      <input class="form__input" type="tel" name="phone" aria-label="Телефон" required>
     </div>
+
+    <p class="form__label form__label--country" data-node-id="146:4978"><span>Страна или регион</span></p>
+    <div class="form__field form__field--country" data-node-id="146:4979">
+      <p class="form__value form__value--country" data-node-id="146:4980">Выберите страну</p>
+      <span class="form__chevron form__chevron--country" aria-hidden="true"><svg width="10.5" height="6.75" viewBox="0 0 10.5 6.75" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M3 3L5 5L7 3" stroke="#79839A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <select class="form__select" name="country" aria-label="Страна или регион"><option value="">Выберите страну</option></select>
+    </div>
+
+    <p class="form__label form__label--service" data-node-id="146:4984"><span>Какая услуга</span></p>
+    <div class="form__field form__field--service" data-node-id="146:4985">
+      <p class="form__value form__value--service" data-node-id="146:4986">Выберите услугу</p>
+      <span class="form__chevron form__chevron--service" aria-hidden="true"><svg width="10.5" height="6.75" viewBox="0 0 10.5 6.75" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M3 3L5 5L7 3" stroke="#79839A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <select class="form__select" name="service" aria-label="Какая услуга"><option value="">Выберите услугу</option></select>
+    </div>
+
+    <p class="form__label form__label--lang" data-node-id="146:4990"><span>Язык обзвона</span></p>
+    <div class="form__field form__field--lang" data-node-id="146:4991">
+      <p class="form__value form__value--lang" data-node-id="146:4992">Выберите язык</p>
+      <span class="form__chevron form__chevron--lang" aria-hidden="true"><svg width="10.5" height="6.75" viewBox="0 0 10.5 6.75" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M3 3L5 5L7 3" stroke="#79839A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <select class="form__select" name="lang" aria-label="Язык обзвона"><option value="">Выберите язык</option></select>
+    </div>
+
+    <input class="form__checkbox" type="checkbox" id="f-consent" name="consent" data-node-id="146:4999">
+    <label class="form__consent" for="f-consent" data-node-id="146:5000">Согласен на обработку моих данных — политика конфиденциальности</label>
+
+    <button class="form__submit" type="submit" data-node-id="177:3467"><span class="form__submit-label">Заказать звонок</span></button>
   </form>
 </section>
-
-<footer class="footer-card">
-  <div class="footer-card__top">
-    <div class="footer__brand">
-      <img class="footer__logo" src="assets/05-footer-logo.png" alt="Globus Contact Center">
-      <p class="footer__description">Контакт-центр полного цикла: принимаем ваши звонки и звоним за вас. Всё видно в вашем личном кабинете, в реальном времени.</p>
-      <div class="footer__socials">
-        <button class="social-icon" aria-label="LinkedIn">in</button>
-        <button class="social-icon" aria-label="Telegram">➤</button>
-      </div>
-    </div>
-    <div class="footer__columns">
-      <div class="footer__column">
-        <p class="footer__column-title">Услуги</p>
-        <ul class="footer__column-list">
-          <li class="footer__column-item">Холодные звонки</li>
-          <li class="footer__column-item">Обзвон клиентов</li>
-          <li class="footer__column-item">Горячая линия</li>
-          <li class="footer__column-item">Приём заказов</li>
-          <li class="footer__column-item">Виртуальный офис</li>
-        </ul>
-      </div>
-      <div class="footer__column">
-        <p class="footer__column-title">О работе</p>
-        <ul class="footer__column-list">
-          <li class="footer__column-item">Что входит</li>
-          <li class="footer__column-item">Кому не подходит</li>
-          <li class="footer__column-item">Частые вопросы</li>
-          <li class="footer__column-item">Живой пульт</li>
-          <li class="footer__column-item">О компании</li>
-        </ul>
-      </div>
-      <div class="footer__column">
-        <p class="footer__column-title">Контакты</p>
-        <ul class="footer__column-list">
-          <li class="footer__column-item">Маршала Бабаджаняна 38</li>
-          <li class="footer__column-item">Ереван, Армения</li>
-          <li class="footer__column-item">+374 93 557 144</li>
-          <li class="footer__column-item">hello@globuscontactcenter.com</li>
-          <li class="footer__column-item">Ответ до 4 рабочих часов</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <hr class="footer__divider">
-  <div class="footer-card__bottom">
-    <p class="footer__copyright">2026 MaxMedia LLC • Globus Contact Center • <a href="#">Политика конфиденциальности</a> • <a href="#">Файлы cookie</a> • <a href="#">Пользовательское соглашение</a></p>
-    <p class="footer__note">Все цены окончательные, налоги включены</p>
-  </div>
+<!-- Живой пульт. The finished board is served from board/ and framed at its own
+     size: the block breaks out of the 1440 canvas to the width of the screen, and
+     the board scales itself inside it. Lazy, so its ~1.1 MB stays out of the
+     initial load until the visitor reaches the bottom of the page. -->
+<section class="board-bleed">
+  <!-- Deliberately empty. The frame is built by the script below, once the block comes
+       near the viewport. Neither loading="lazy" nor a data-src placeholder is enough:
+       the browser's own lazy threshold fetched the whole board on first paint, and an
+       empty <iframe> sitting in the markup still costs the parser a child document -
+       measured on this page, it pushed DOMContentLoaded from 33 ms to 193 ms. The
+       block's box is sized by CSS alone, so nothing moves when the frame arrives.
+       There is no <noscript> fallback on purpose: the board is a live JS demo, and
+       without scripting it renders frozen, in the wrong theme and clipped to its
+       top-left corner, after downloading 1.16 MB to do it. Without scripting the
+       block is simply not there, and the page is the page it was before it. -->
+</section>
+<footer class="footer-card" data-node-id="152:5008">
+  <img class="footer__logo is-on-dark" src="assets/05-footer-logo.png" alt="Globus Contact Center" data-node-id="152:5009">
+  <img class="footer__logo is-on-light" src="assets/05-footer-logo-on-light.png" alt="" aria-hidden="true" data-node-id="152:5009">
+  <p class="footer__description" data-node-id="152:5010">Контакт-центр полного цикла: принимаем ваши звонки и звоним за вас. Всё видно в вашем личном кабинете, в реальном времени.</p>
+  <button class="footer__social footer__social--in" type="button" aria-label="LinkedIn" data-node-id="152:5013"><span class="footer__social-icon" aria-hidden="true"><svg width="9.84" height="8.40175" viewBox="0 0 9.84 8.40175" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><g clip-path="url(#fc-li)"><path d="M1.20039 0C1.5183 0 1.82321 0.126446 2.04806 0.351172C2.27284 0.576497 2.39917 0.881525 2.39917 1.19974C2.39917 1.51795 2.27284 1.82358 2.04806 2.0483C1.82321 2.27363 1.5183 2.40007 1.20039 2.40007C0.88242 2.40007 0.577512 2.27363 0.352726 2.0483C0.12788 1.82358 0.0015545 1.51795 0.0015545 1.19974C0.0015545 0.881525 0.12788 0.576497 0.352726 0.351172C0.577512 0.126446 0.88242 0 1.20039 0ZM0.25091 2.63978H2.16899V8.39996H0.25091V2.63978ZM3.60754 2.63978H5.42997V3.45599H5.45395C5.70804 2.99994 6.33128 2.51993 7.25655 2.51993C9.17001 2.51993 9.8412 3.59981 9.8412 5.0878V8.39996H7.92293V5.47193C7.92293 4.77618 7.90855 3.88806 6.95451 3.88806C5.9861 3.88806 5.83748 4.64194 5.83748 5.42399V8.39996H3.91922V2.63978H3.60754Z" fill="#79839A"/></g><defs><clipPath id="fc-li"><rect width="9.84" height="8.40175" fill="white"/></clipPath></defs></svg></span></button>
+  <button class="footer__social footer__social--tg" type="button" aria-label="Telegram" data-node-id="152:5017"><span class="footer__social-icon" aria-hidden="true"><svg width="9.89" height="7.73818" viewBox="0 0 9.89 7.73818" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><g clip-path="url(#fc-tg)"><path d="M9.89 0.183411L8.45086 7.24068C8.35496 7.72079 8.06725 7.81669 7.63568 7.60091L5.42931 5.96876L4.37438 7.00092C4.2545 7.1208 4.1586 7.2167 3.94282 7.2167L4.08667 5.00853L8.2111 1.28749C8.37893 1.14364 8.16315 1.04714 7.94737 1.19159L2.50367 4.6483L0.345256 3.97578C-0.13426 3.83192 -0.13426 3.49626 0.441758 3.27988L8.88242 0.0149814C9.26663 -0.128873 9.60229 0.110884 9.48242 0.663526L9.89 0.183411Z" fill="#79839A"/></g><defs><clipPath id="fc-tg"><rect width="9.89" height="7.73818" fill="white"/></clipPath></defs></svg></span></button>
+  <p class="footer__column-title footer__col--services" data-node-id="152:5021">Услуги</p>
+  <p class="footer__item footer__col--services footer__row--1" data-node-id="152:5022">Холодные звонки</p>
+  <p class="footer__item footer__col--services footer__row--2" data-node-id="152:5023">Обзвон клиентов</p>
+  <p class="footer__item footer__col--services footer__row--3" data-node-id="152:5024">Горячая линия</p>
+  <p class="footer__item footer__col--services footer__row--4" data-node-id="152:5025">Приём заказов</p>
+  <p class="footer__item footer__col--services footer__row--5" data-node-id="152:5026">Виртуальный офис</p>
+  <p class="footer__column-title footer__col--about" data-node-id="152:5027">О работе</p>
+  <p class="footer__item footer__col--about footer__row--1" data-node-id="152:5028">Что входит</p>
+  <p class="footer__item footer__col--about footer__row--2" data-node-id="152:5029">Кому не подходит</p>
+  <p class="footer__item footer__col--about footer__row--3" data-node-id="152:5030">Частые вопросы</p>
+  <p class="footer__item footer__col--about footer__row--4" data-node-id="152:5031">Живой пульт</p>
+  <p class="footer__item footer__col--about footer__row--5" data-node-id="152:5032">О компании</p>
+  <p class="footer__column-title footer__col--contacts" data-node-id="152:5033">Контакты</p>
+  <p class="footer__item footer__col--contacts footer__row--1" data-node-id="152:5034">Маршала Бабаджаняна 38</p>
+  <p class="footer__item footer__col--contacts footer__row--2" data-node-id="152:5035">Ереван, Армения</p>
+  <p class="footer__item footer__col--contacts footer__row--3" data-node-id="152:5036">+374 93 557 144</p>
+  <p class="footer__item footer__col--contacts footer__row--4" data-node-id="152:5037">hello@globuscontactcenter.com</p>
+  <p class="footer__item footer__col--contacts footer__row--5" data-node-id="152:5038">Ответ до 4 рабочих часов</p>
+  <i class="footer__hair footer__hair--light" data-node-id="178:3487"></i>
+  <i class="footer__hair footer__hair--dark" data-node-id="178:3486"></i>
+  <p class="footer__copyright" data-node-id="152:5040"><span>2026 MaxMedia LLC • Globus Contact Center • </span><a href="#">Политика конфиденциальности</a><span> </span><span>• </span><a href="#">Файлы cookie</a><span> • </span><a href="#">Пользовательское соглашение</a></p>
+  <p class="footer__note" data-node-id="152:5044">Все цены окончательные, налоги включены</p>
 </footer>
 
 </div>
+
+<script>
+// Theme toggle. Colour only: it flips one attribute on <html> and nothing else.
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById("theme-toggle");
+  if (!btn) return;
+  function sync() {
+    var dark = root.getAttribute("data-theme") !== "light";
+    btn.setAttribute("aria-pressed", dark ? "false" : "true");
+    btn.setAttribute("aria-label", dark ? "Включить светлую тему" : "Включить тёмную тему");
+  }
+  function set(theme) {
+    root.setAttribute("data-theme", theme);
+    try { localStorage.setItem("theme", theme); } catch (e) {}
+    sync();
+  }
+  btn.addEventListener("click", function () {
+    set(root.getAttribute("data-theme") === "light" ? "dark" : "light");
+  });
+  // No keydown handler: a native <button> already activates on both Enter and
+  // Space and consumes the key, so the page does not scroll. Calling
+  // preventDefault here would suppress that activation instead of helping it.
+  // follow the OS while the visitor has made no explicit choice
+  try {
+    matchMedia("(prefers-color-scheme: light)").addEventListener("change", function (e) {
+      if (!localStorage.getItem("theme")) root.setAttribute("data-theme", e.matches ? "light" : "dark"), sync();
+    });
+  } catch (e) {}
+  sync();
+})();
+</script>
+<script>
+// Board block. Two jobs, both about the frame at the bottom: how wide it is, and
+// which theme it shows. No messaging is involved - the board is served from this
+// same origin, so it already reads the same localStorage key on load and its
+// document is directly reachable for a live flip.
+(function () {
+  var root = document.documentElement;
+  var block = document.querySelector(".board-bleed");
+  if (!block) return;
+  var frame = null;
+
+  // The bleed is the viewport's width, floored at the 1440 canvas the page already
+  // scrolls to, so nothing new can overflow horizontally below 1440.
+  function fit() {
+    pending = 0;
+    root.style.setProperty("--bleed-w", Math.max(root.clientWidth, 1440) + "px");
+  }
+  // Always in a frame, never inline: writing a custom property on the root
+  // invalidates the style of this whole 4000px document, and doing that mid-parse
+  // cost 115 ms of DOMContentLoaded when measured. requestAnimationFrame still runs
+  // before the first paint, so the block is the right size on the very first frame,
+  // and one pending frame at a time keeps a resize drag from queueing dozens.
+  var pending = 0;
+  window.addEventListener("resize", function () {
+    if (!pending) pending = requestAnimationFrame(fit);
+  }, { passive: true });
+
+  // The block's stylesheet is fetched by this script rather than by a <link> in the
+  // head. It styles one thing, 2600px down, and as a fourth blocking stylesheet it
+  // cost ~6 ms of DOMContentLoaded on every visit for nothing. Until it lands the
+  // section is empty and paints nothing, so there is no flash to avoid.
+  var sheet = document.createElement("link");
+  sheet.rel = "stylesheet";
+  sheet.href = "css/board-block.css";
+  sheet.media = "print";               // fetched without holding up the first paint
+  sheet.addEventListener("load", function () {
+    sheet.media = "all";
+    fit();
+    root.classList.add("has-board");   // the whole block hangs off this class
+    // Named only now. A <section> with an accessible name is a landmark, and without
+    // scripting this one holds nothing - an empty region announced to a screen reader
+    // is worse than no region at all.
+    block.setAttribute("aria-label", "Живой пульт");
+    watch();
+  });
+  document.head.appendChild(sheet);
+
+  // The board's ~1.1 MB is fetched only once the block is close to the screen, and
+  // the frame itself does not exist until then.
+  //
+  // It is also PUT TO SLEEP again once the block is out of the way. The board is a
+  // live demo whose animation loop never idles - measured at 60 fps and 12-18% of a
+  // core, running on regardless of whether anything is on screen - so leaving it
+  // awake costs a visitor their battery for the rest of the visit. A frame that is
+  // display:none is not rendered, so its requestAnimationFrame loop simply stops;
+  // the document, its state and its counters stay exactly where they were, which
+  // removing the element would have thrown away.
+  var teardown = 0;
+  function load() {
+    clearTimeout(teardown);
+    if (frame) { frame.style.display = ""; return; }
+    frame = document.createElement("iframe");
+    frame.className = "board-bleed__frame";
+    frame.title = "Живой пульт: доска холодных звонков в реальном времени";
+    frame.addEventListener("load", onFrameLoad);
+    frame.src = "board/index.html";
+    block.appendChild(frame);
+  }
+  // Asleep it still costs ~1.5% of a core: display:none stops the rendering, not the
+  // demo's own timers. So after half a minute out of sight it is taken down for real -
+  // by then the visitor is not coming straight back, and the rebuild is free from
+  // cache. Quick scroll-aways keep their counters; long ones cost nothing at all.
+  function sleep() {
+    if (!frame) return;
+    frame.style.display = "none";
+    clearTimeout(teardown);
+    teardown = setTimeout(function () {
+      if (frame && frame.style.display === "none") { block.removeChild(frame); frame = null; }
+    }, 30000);
+  }
+  // Two margins, not one, so scrolling along the boundary cannot flip it. They are
+  // deliberately small: this block sits 2600px down a 4000px page, so a margin wide
+  // enough to "be far away" can never be reached on a tall window - an earlier
+  // 1600px version never fired at all above a 1000px viewport.
+  function watch() {
+    if (!window.IntersectionObserver) { load(); return; }
+    new IntersectionObserver(function (e) {
+      if (e[e.length - 1].isIntersecting) load();
+    }, { rootMargin: "600px 0px" }).observe(block);
+    new IntersectionObserver(function (e) {
+      if (!e[e.length - 1].isIntersecting) sleep();
+    }, { rootMargin: "800px 0px" }).observe(block);
+  }
+
+  function frameRoot() {
+    try { return frame && frame.contentDocument && frame.contentDocument.documentElement; }
+    catch (e) { return null; }   // only reachable if the board ever moves off-origin
+  }
+
+  // Each side is driven through its OWN switch rather than by writing its attribute
+  // from outside: that button carries its own aria state, and setting the attribute
+  // behind its back left it announcing the opposite of what its document was showing.
+  // Both switches have two states, so one click always lands on the value we want.
+  //
+  // The catch, and why the store is put back: a switch also REMEMBERS the choice. When
+  // the flip did not come from the visitor at all but from the operating system going
+  // light or dark, remembering it would freeze the page on that value and stop it
+  // following the system ever again. So if nothing was stored before the mirroring
+  // click, nothing is stored after it either.
+  function mirror(doc, otherRoot, theme) {
+    var had = null;
+    try { had = localStorage.getItem("theme"); } catch (e) {}
+    var btn = doc.getElementById("theme-toggle");
+    if (btn) btn.click(); else otherRoot.setAttribute("data-theme", theme);
+    if (had === null) { try { localStorage.removeItem("theme"); } catch (e) {} }
+  }
+
+  // Landing -> board.
+  function push() {
+    var r = frameRoot(), t = root.getAttribute("data-theme");
+    if (!r || !t || r.getAttribute("data-theme") === t) return;
+    mirror(frame.contentDocument, r, t);
+  }
+
+  // Board -> landing, the same way round.
+  function pull() {
+    var r = frameRoot(); if (!r) return;
+    var t = r.getAttribute("data-theme");
+    if (!t || root.getAttribute("data-theme") === t) return;
+    mirror(document, root, t);
+  }
+
+  new MutationObserver(push).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+
+  function onFrameLoad() {
+    // The board reserves a scrollbar gutter of its own (scrollbar-gutter: stable),
+    // so its document is narrower than the frame that holds it. Measure that
+    // difference - the frame's own box against the document inside it - and widen
+    // the frame by exactly as much, so the board fills the block and the reserved
+    // strip falls outside the clip. Zero on overlay-scrollbar platforms.
+    try {
+      var de = frame.contentDocument.documentElement;
+      var g = de.clientWidth - de.offsetWidth;   /* viewport minus the reserved box */
+      if (g > 0) root.style.setProperty("--board-gutter", g + "px");
+    } catch (e) {}
+    push();
+    var r = frameRoot();
+    if (r) new MutationObserver(pull).observe(r, { attributes: true, attributeFilter: ["data-theme"] });
+  }
+})();
+</script>
 </body>
 </html>

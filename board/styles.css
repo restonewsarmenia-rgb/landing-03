@@ -1,0 +1,3031 @@
+/* =============================================================================
+   Globus — "Холодные звонки 2" · 1:1 HTML rebuild
+   STEP 2 — SKELETON: fonts, frame, plate, whole-board scaling. Nothing else.
+
+   Source of truth: the live remote Figma MCP, file FAVORIT-1
+   L74HqJy6UaXDIbU4d3Hjib, page "Холодные звонки 2", frame "1920w light" 683:2801.
+   Every value below was read from the live file, not from an image and not assumed.
+   ============================================================================= */
+
+
+
+/* ===== COLOUR TOKENS =====================================================
+   Step 1-2 of the dark-theme plan. Every colour the board paints is named here
+   and nowhere else. Each use is written var(--dash-role, <the original literal>),
+   so a missing or mistyped token degrades to the exact pixel that shipped, never
+   to nothing. Names describe the ROLE, not the value, because the dark theme has
+   to grip roles: the same #ffffff is a highlight in one place and a recessed
+   surface in another, and those two must be able to part company.
+   The --dash- prefix keeps this set from colliding with the landing's --color-*
+   set when both stylesheets are loaded on one page.
+   ===================================================================== */
+:root {
+  --dash-badge-email:    #ffa80b;
+  --dash-badge-live:     #10d096;
+  --dash-bar-from:       rgba(22, 41, 70, 0.46);
+  --dash-bar-to:         #162946;
+  --dash-brand:          #ff5500;
+  --dash-danger:         #fc2f37;
+  --dash-disc:           #333333;
+  --dash-dot-live:       #39d05f;
+  --dash-glow:           #ffffff;
+  --dash-icon-2:         #93a1af;
+  --dash-ink-footer:     #446079;   /* was #bac1cc: 1.54:1 on the footer plate, i.e. not
+                                       readable at all. Raised to the board's own secondary
+                                       ink, the value --dash-ink-2 already carries, which is
+                                       5.6:1 there. Colour only; the two footer lines keep
+                                       their place, size and weight. */
+  --dash-grid:           #162946;   /* the dashed row grid of the three bottom tables. Same
+                                       value as the primary ink in the light theme, but its
+                                       own role: a rule, not type, and on dark the two must
+                                       part company or the grid shouts. */
+  --dash-ink-on-dark:    #ffffff;
+  --dash-rim:            #6f8197;
+  --dash-rim-2:          #8795a1;
+  --dash-sh-d:           #c4ceda;
+  --dash-sh-d-14:        rgba(196, 206, 218, 0.14);
+  --dash-sh-d-24:        rgba(162, 177, 196, 0.24);
+  --dash-sh-d-43:        rgba(196, 206, 218, 0.43);
+  --dash-sh-d-51:        rgba(196, 206, 218, 0.51);
+  --dash-sh-d-52:        rgba(176, 196, 219, 0.52);
+  --dash-sh-d-53:        rgba(176, 196, 219, 0.53);
+  --dash-sh-d-57:        rgba(196, 206, 218, 0.57);
+  --dash-sh-d-64:        rgba(185, 202, 216, 0.64);
+  --dash-sh-d-78:        rgba(196, 206, 218, 0.78);
+  --dash-sh-d-deep:      #b0c4db;
+  --dash-sh-d-far:       #d8dae4;
+  --dash-sh-k:           #000000;
+  --dash-sh-k-20:        rgba(0, 0, 0, 0.2);
+  --dash-sh-l:           #ffffff;
+  --dash-sh-l-45:        rgba(255, 255, 255, 0.45);
+  --dash-sh-l-60:        rgba(255, 255, 255, 0.6);
+  --dash-sh-l-64:        rgba(255, 255, 255, 0.64);
+  --dash-sh-l-81:        rgba(255, 255, 255, 0.81);
+  --dash-sh-l-86:        rgba(255, 255, 255, 0.86);
+  --dash-surface-card:   rgba(255, 255, 255, 0.002);
+  --dash-surface-well:   #ffffff;
+  --dash-tsh:            rgba(0, 0, 0, 0.25);
+}
+
+
+/* -----------------------------------------------------------------------------
+   1. FONTS — self-hosted, no CDN. All three families the design uses stay.
+      Open Sans ships as the VARIABLE cut so the wdth axis Figma emits
+      (fontVariationSettings: "wdth" 100) is honoured.
+
+      Weights the design actually uses (per 02-ШРИФТЫ-полные.md):
+        Open Sans  400 Regular · 600 SemiBold · 700 Bold · 600 SemiBold Italic
+        Manrope    300 Light · 400 Regular · 500 Medium · 600 SemiBold
+        Inter      700 Bold
+      All are inside the variable ranges declared below.
+      Cyrillic + Latin subsets are included — the design is in Russian.
+
+      Two glyphs in the design are outside every shipped subset (cmap-checked, both
+      confirmed missing). Neither is rendered at this step; handle them in their zone:
+        ZONE 2 — node 683:3202 is U+263C (WHITE SUN WITH RAYS) in Inter Bold 28. No
+                 Google Fonts Inter subset carries it. HANDLED: that node is not typed
+                 as text anywhere; see the .tb-sun rule for how it is drawn instead.
+        ZONE 5 — node 683:3150 "Изменение статуса: P2 → P3" contains "→" U+2192 in
+                 Open Sans Regular 15. Not in the shipped Open Sans files, so it will
+                 fall back unless that one glyph is supplied when the zone is built.
+   -------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 300 800;
+  font-stretch: 75% 100%;
+  font-display: block;
+  src: url('fonts/opensans-cyrillic-ext-italic.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 300 800;
+  font-stretch: 75% 100%;
+  font-display: block;
+  src: url('fonts/opensans-cyrillic-italic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 300 800;
+  font-stretch: 75% 100%;
+  font-display: block;
+  src: url('fonts/opensans-latin-ext-italic.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 300 800;
+  font-stretch: 75% 100%;
+  font-display: block;
+  src: url('fonts/opensans-latin-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300 800;
+  font-stretch: 75% 100%;
+  font-display: block;
+  src: url('fonts/opensans-cyrillic-ext-normal.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300 800;
+  font-stretch: 75% 100%;
+  font-display: block;
+  src: url('fonts/opensans-cyrillic-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300 800;
+  font-stretch: 75% 100%;
+  font-display: block;
+  src: url('fonts/opensans-latin-ext-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300 800;
+  font-stretch: 75% 100%;
+  font-display: block;
+  src: url('fonts/opensans-latin-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+  src: url('fonts/manrope-cyrillic-ext-normal.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+  src: url('fonts/manrope-cyrillic-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+  src: url('fonts/manrope-latin-ext-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+  src: url('fonts/manrope-latin-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('fonts/inter-cyrillic-ext-normal.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('fonts/inter-cyrillic-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('fonts/inter-latin-ext-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('fonts/inter-latin-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+/* -----------------------------------------------------------------------------
+   2. TOKENS — only the ones this step actually needs.
+      Values read live from the Figma file, not from a screenshot.
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* Design canvas — Figma frame 683:2801 */
+  --design-w: 1920px;
+  --design-h: 1200px;
+  /* Unitless twins — aspect-ratio takes numbers, not lengths. */
+  --design-w-n: 1920;
+  --design-h-n: 1200;
+
+  /* Frame background layers — node 683:2801 fills, bottom to top:
+     SOLID #ffffff · SOLID #f1f2f6 · LINEAR gradient #e9f1fa 100% -> 0% */
+  --dash-surface-base:  #ffffff;
+  --dash-plate-rim:      #ffffff;   /* the plate's own 4px inside stroke; same white as the
+                                       frame base in the light theme, but a different role:
+                                       on dark the base is the ground and the rim is raised */   /* var --color/white/solid */
+  --dash-surface-page:      #f1f2f6;   /* var --color/grey/95   */
+  --dash-sheen-from:    rgb(233, 241, 250);      /* var --color/grey/95-2   */
+  --dash-sheen-to:    rgba(233, 241, 250, 0);  /* var --color/grey/95-0%  */
+
+  /* Plate — node 683:2802 */
+  --plate-x: 60px;
+  --plate-y: 56px;
+  --plate-w: 1800px;
+  --plate-h: 1048px;
+  --plate-radius: 20px;         /* Figma cornerRadius = 20 (var --line-height/20) */
+  --plate-stroke: 4px;          /* strokeWeight 4, strokeAlign INSIDE */
+}
+
+
+/* -----------------------------------------------------------------------------
+   3. PAGE + WHOLE-BOARD SCALING
+      The 1920-wide board scales as ONE unit from a fixed design width.
+      Aspect ratio preserved, nothing reflows, no element moves relative to another.
+   -------------------------------------------------------------------------- */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Load-bearing. Without it the scale is circular: the board's height depends
+     on the width, the width depends on whether a vertical scrollbar is showing,
+     and the scrollbar depends on the height. On a classic-scrollbar platform
+     that oscillates forever inside a ~9px band of window heights and the whole
+     board flickers by the scrollbar's width. Reserving the gutter permanently
+     makes the width constant and cuts the loop. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  /* Same solid layer the frame itself carries, so the surround never shows a
+     colour that is not in the design. */
+  background: var(--dash-surface-page);
+}
+
+#stage {
+  --board-scale: 1;             /* JS overwrites this; see the aspect-ratio note */
+  position: relative;
+  width: 100%;
+
+  /* CSS owns the height, derived from the width by the design's own ratio.
+     JS never writes it, so JS can no longer feed its own output back into the
+     width it reads. Also gives a correctly-shaped box on the very first paint. */
+  aspect-ratio: var(--design-w-n) / var(--design-h-n);
+
+  overflow: hidden;             /* kills the horizontal scrollbar, nothing more */
+}
+
+#board {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--design-w);
+  height: var(--design-h);
+  transform-origin: 0 0;
+  transform: scale(var(--board-scale));
+
+  /* Figma clipsContent = false on 683:2801 — the frame does not clip its children. */
+  overflow: visible;
+
+  /* Frame background — three layers, exactly the order Figma emits them,
+     topmost first. Not a flat colour. */
+  background-image:
+    linear-gradient(123.00000067528605deg, var(--dash-sheen-from) 0%, var(--dash-sheen-to) 100%),
+    linear-gradient(90deg, var(--dash-surface-page) 0%, var(--dash-surface-page) 100%),
+    linear-gradient(90deg, var(--dash-surface-base) 0%, var(--dash-surface-base) 100%);
+}
+
+
+/* -----------------------------------------------------------------------------
+   4. PLATE — node 683:2802 div.admin-dash
+      Live values: x 60 · y 56 · 1800 x 1048 · radius 20 · fill #f1f2f6 ·
+      4px inside white stroke · clipsContent true · 7 stacked drop shadows.
+   -------------------------------------------------------------------------- */
+
+.admin-dash {
+  position: absolute;
+  left: var(--plate-x);
+  top: var(--plate-y);
+  width: var(--plate-w);
+  height: var(--plate-h);
+
+  background-color: var(--dash-surface-page);
+  border: var(--plate-stroke) solid var(--dash-plate-rim, #ffffff);  /* strokeAlign INSIDE */
+  border-radius: var(--plate-radius);
+
+  overflow: hidden;             /* Figma clipsContent = true */
+
+  /* 7-layer neumorphic drop shadow, verbatim from the live file (683:2802). */
+  box-shadow:
+    -27px -16px 20px 20px var(--dash-sh-l-81, rgba(255, 255, 255, 0.81)),
+      3px   3px 10px  4px var(--dash-sh-d-24, rgba(162, 177, 196, 0.24)),
+     25px  33px 56px -4px var(--dash-sh-d-far, #d8dae4),
+     13px  13px 20px  0px var(--dash-sh-d, #c4ceda),
+      0px  -4px 11px  0px var(--dash-sh-l, #ffffff),
+    -10px  -2px 10px  0px var(--dash-sh-l, #ffffff),
+     -5px  -5px 20px  9px var(--dash-sh-l-86, rgba(255, 255, 255, 0.86));
+}
+
+
+/* -----------------------------------------------------------------------------
+   5. ZONE STYLES — added one zone at a time in ЭТАП 3, then frozen (MOS-07).
+      Order: sidebar · topbar · 4 KPI cards · operators · Bitrix · last calls ·
+      cost · footer.
+   -------------------------------------------------------------------------- */
+
+/* .plate-inner — coordinate fix, not decoration.
+   The plate carries a 4px INSIDE stroke, so an absolutely-positioned child of
+   .admin-dash resolves against the padding box and lands 4px right and 4px down.
+   This layer restores the plate's border-box origin, letting every zone use the
+   plain plate-local numbers Figma reports. It paints nothing. */
+.plate-inner {
+  position: absolute;
+  left: calc(var(--plate-stroke) * -1);
+  top: calc(var(--plate-stroke) * -1);
+  width: var(--plate-w);
+  height: var(--plate-h);
+}
+
+
+/* =============================================================================
+   ZONE 1 — SIDEBAR · node 683:2803 · FROZEN
+   Live values: plate-local 7·4 · 358×1042 · fill #f1f2f6 · cornerRadius 0 ·
+   clipsContent true · 2 drop-shadow layers.
+   ========================================================================== */
+
+:root {
+  --dash-ink-menu:    #707172;  /* Manrope menu labels, live fill                */
+  --dash-ink-menu-active:   #16324b;  /* Nile Blue — the active item's label           */
+  --dash-icon-menu:     #707172;  /* the nine menu icons — the design's own fill,
+                                verified live on all nine nodes. Same grey as
+                                the labels. Recolouring them is a separate
+                                decision for the demo stage, not done here:
+                                this build is a strict 1:1 copy.              */
+  --dash-ink-1: #162946;  /* Figma variable of the same name, 46 text runs */
+}
+
+.dash-menu {
+  position: absolute;
+  left: 7px;
+  top: 4px;
+  width: 358px;
+  height: 1042px;
+  background: var(--dash-surface-page);
+  border-radius: 0;               /* live cornerRadius = 0; the plate's own
+                                     20px radius is what clips this corner */
+  overflow: hidden;               /* clipsContent = true */
+  box-shadow:
+    30px  0px 50px 0px var(--dash-sh-d-43, rgba(196, 206, 218, 0.43)),
+     4px  4px 10px 0px var(--dash-sh-d-57, rgba(196, 206, 218, 0.57));
+}
+
+/* node 683:2804 — empty in the design; kept so the tree stays auditable. */
+.dash-logo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 358.39px;
+  height: 90px;
+}
+
+.dash-menu-wrapper {
+  position: absolute;
+  left: 0;
+  top: 90px;
+  width: 358.39px;
+  height: 837px;
+  overflow: visible;              /* the logo deliberately bleeds out of it */
+}
+
+/* node 683:2842 — RECTANGLE with an IMAGE fill, scaleMode FILL.
+   Stays a raster: it is artwork, not a redrawable vector. The export is far
+   larger than its frame, so the display size is pinned here, not left to the file. */
+.dash-logo-img {
+  position: absolute;
+  left: 44px;
+  top: -54px;                     /* bleeds up into the logo band */
+  width: 262px;
+  height: 91px;
+  object-fit: cover;              /* = Figma scaleMode FILL */
+  display: block;
+  pointer-events: none;
+}
+
+/* ---- active item: node 683:2807 → 683:2808 "Dashboard" ------------------- */
+
+.menu-frame {
+  position: absolute;
+  left: 20px;
+  top: 32px;
+  width: 318.39px;
+  height: 244px;
+}
+
+.menu-active {
+  position: absolute;
+  left: 0;
+  top: 34px;
+  width: 318.39px;
+  height: 46px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 13px 0 13px 20px;      /* Figma py-13 / pl-20 */
+}
+
+/* The recessed look. Figma paints it on an overlay pinned inset-0 with a fully
+   transparent fill, so it is reproduced as its own layer rather than folded in. */
+.menu-active__shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: var(--dash-sheen-to, rgba(255, 255, 255, 0));
+  pointer-events: none;
+  box-shadow:
+    inset  14px  14px 12px   0px var(--dash-sh-d-14, rgba(196, 206, 218, 0.14)),
+    inset  -3px  -3px  5px   0px var(--dash-sh-l, #ffffff),
+    inset   2px   2px  5px   0px var(--dash-sh-d-78, rgba(196, 206, 218, 0.78)),
+    inset   1px   1px 16px -13px var(--dash-rim, #6f8197);
+}
+
+.menu-active__icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 30px;                    /* 20px glyph box + 10px right padding */
+  height: 20px;
+  padding-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.menu-active__icon > svg {
+  display: block;
+  width: 20px;
+  height: 18.361px;               /* live glyph box, not the 20px wrapper */
+}
+
+.menu-active__label {
+  position: relative;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;              /* live PIXELS value, not auto */
+  letter-spacing: 0;
+  color: var(--dash-ink-menu-active);
+  white-space: nowrap;
+}
+
+/* ---- the nine menu rows -------------------------------------------------- */
+/* Icons and labels are separate absolutely-positioned nodes in the design and
+   do not share a row box, so each keeps its own live coordinate. */
+
+.menu-icon {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  /* The nine menu icons carry the design's own #707172. Their paths follow
+     currentColor, so the colour lives in exactly one place instead of nine
+     inline attributes — and a later recolour is a one-line change here.
+     The active item's home glyph is NOT driven from here: Figma ships that
+     one at #162946 and it keeps its own literal fill. */
+  color: var(--dash-icon-menu);
+}
+
+.menu-icon > svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.menu-label {
+  position: absolute;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;               /* Manrope Medium */
+  font-size: 14px;
+  line-height: 19px;              /* Figma reports AUTO here; 19px is the live
+                                     height of every one of these text boxes, so
+                                     the number is pinned instead of left to the
+                                     browser's own "normal" */
+  letter-spacing: 0.1px;
+  color: var(--dash-ink-menu);
+  white-space: nowrap;
+}
+
+/* ---- support button: node 683:2843 → 683:2844 ---------------------------- */
+
+.logout-wrap {
+  position: absolute;
+  left: 0;
+  top: 917px;
+  width: 358.39px;
+  height: 115px;
+}
+
+.support {
+  position: absolute;
+  left: 25px;
+  top: 25px;
+  width: 308.39px;
+  height: 50px;
+  background: var(--dash-surface-page);
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;        /* padding, not centring — the live text box
+                                     sits at 14.5px, half a pixel above centre */
+  justify-content: center;
+  padding: 14.5px 15px 15.5px;
+}
+
+.support__shadow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 50px;
+  border-radius: 6px;
+  background: var(--dash-sheen-to, rgba(255, 255, 255, 0));
+  pointer-events: none;
+  box-shadow:
+        -14px -14px 20px  0px var(--dash-sh-l, #ffffff),
+          3px   3px  6px  0px var(--dash-sh-d-64, rgba(185, 202, 216, 0.64)),
+         -4px   0px  3px  0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+          0px -12px 20px  0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+         -2px  -2px 14px  4px var(--dash-sh-l, #ffffff),
+          3px   3px 20px 13px var(--dash-sh-d-52, rgba(176, 196, 219, 0.52)),
+          3px   3px 15px  0px var(--dash-sh-d, #c4ceda),
+    inset 1px   1px  1px  0px var(--dash-sh-l, #ffffff);
+}
+
+.support__label {
+  position: relative;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  text-align: center;
+  white-space: nowrap;
+}
+
+
+/* =============================================================================
+   ZONE 2 — TOPBAR · FROZEN
+   All boxes are plate-local (Figma frameRelative minus the plate origin 60·56),
+   read live from the remote MCP. div.dash-topbar is empty in the design; its
+   content is a separate group painted over it, reproduced here in paint order.
+   ========================================================================== */
+
+:root {
+  --dash-ink-2:       #446079;  /* Figma variable of the same name — date-range chip */
+  --dash-ink-1:  #162946;  /* Figma variable of the same name                   */
+}
+
+/* node 683:3257 — empty frame in the design: no fill, no shadow, no children. */
+.dash-topbar {
+  position: absolute;
+  left: 366.39px;
+  top: 8px;
+  width: 1433.61px;
+  height: 90px;
+}
+
+/* ---- search bar: 683:3173 -> 683:3174 ------------------------------------ */
+
+.searchbar {
+  position: absolute;
+  left: 406.39px;
+  top: 39px;
+  width: 1063.61px;
+  height: 40px;
+}
+
+.search-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1001px;
+  height: 40px;
+  background: var(--dash-surface-page);
+  border-radius: 10px 10px 0 0;    /* live: top corners only */
+  overflow: hidden;                /* clipsContent = true */
+}
+
+/* Figma paints the recess on an overlay pinned inset-0, not on the node. */
+.search-input__shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset -3px -2px 7px  0px var(--dash-sh-l, #ffffff),
+    inset  3px  3px 7px -2px var(--dash-sh-d, #c4ceda);
+}
+
+.tb-service {
+  position: absolute;
+  left: 12.61px;
+  top: 6px;
+  width: 220px;
+  height: 30px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 30px;               /* live PIXELS value. In the design this comes
+                                      from a variable filed as --opacity/30; only
+                                      the resolved number is carried over. */
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+/* the three clock/date nodes — Manrope Regular 12, box height 16.
+   Figma leaves line-height AUTO on these, so there is no number to carry over; the
+   box is 16px and the file's own ink box puts the baseline 13.18px below the box top.
+   At line-height 16 the browser lands a whole pixel higher, so the number pinned here
+   is the one that puts the glyphs on Figma's real ink. Box top and height stay live. */
+.tb-clock,
+.tb-weekday,
+.tb-date {
+  position: absolute;
+  top: 12px;
+  height: 16px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+.tb-clock   { left: 244.61px; letter-spacing: 0.5px; }
+.tb-weekday { left: 300.61px; white-space: pre; }   /* the design has a double space */
+.tb-date    { left: 464.61px; }
+
+/* the date-range chip — 683:3178 Group 203 */
+.tb-cal-icon,
+.tb-range-chevron {
+  position: absolute;
+  top: 13px;
+  width: 14px;
+  height: 14px;
+}
+
+.tb-cal-icon      { left: 806.61px; }
+.tb-range-chevron { left: 951.61px; }
+
+.tb-cal-icon > svg,
+.tb-range-chevron > svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.tb-range {
+  position: absolute;
+  left: 825.61px;
+  top: 12px;
+  height: 16px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;                /* Manrope Medium */
+  font-size: 12px;
+  line-height: 18px;               /* same calibration as the clock/date runs above */
+  color: var(--dash-ink-2);
+  white-space: nowrap;
+}
+
+/* node 683:3188 — empty box in the design: no glyph, no fill, no border. */
+.search-button {
+  position: absolute;
+  left: 1001px;
+  top: 0;
+  width: 28px;
+  height: 40px;
+}
+
+/* ---- "Client / ID" control: 683:3189 -> 683:3194 -> 683:3195 -------------- */
+
+.status-bar {
+  position: absolute;
+  left: 1426px;
+  top: 38px;
+  width: 290px;
+  height: 42px;
+}
+
+.status-bar__linkbox {
+  position: absolute;
+  left: 60px;
+  top: 1px;
+  width: 60px;
+  height: 40px;
+}
+
+/* 683:3191 / 683:3198 / 683:3204 — the wrappers that carried the outbound links.
+   683:3191 and 683:3198 are empty in the design and paint nothing; they are kept
+   as boxes so the tree stays auditable. No href on any of them. */
+.topbar-linkbox {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 683:3194 is 170 wide, but the control inside it is 214 and deliberately overflows
+   to the right. The box does not clip in the design, so it must not clip here. */
+.dropdown-box {
+  position: absolute;
+  left: 120px;
+  top: 0;
+  width: 170px;
+  height: 42px;
+  overflow: visible;
+}
+
+.client {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 214px;                    /* the control's real width, not its box's */
+  height: 42px;
+  min-height: 40px;
+  background: var(--dash-surface-page);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+}
+
+.client__shadow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--dash-sheen-to, rgba(255, 255, 255, 0));
+  pointer-events: none;
+  box-shadow:
+         11px  11px 20px -5px var(--dash-sh-d-53, rgba(176, 196, 219, 0.53)),
+         -3px  -3px  8px  4px var(--dash-sh-l, #ffffff),
+          3px   3px  3px  0px var(--dash-sh-d-51, rgba(196, 206, 218, 0.51)),
+    inset 1px   1px  1px  0px var(--dash-sh-l, #ffffff);
+}
+
+.client__avatar {
+  position: relative;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;              /* the design's 40px cell = 30px avatar + 10px */
+  border-radius: 100px;
+  overflow: hidden;                /* the wrapper does the crop, as in the design */
+  box-shadow: 1px 1px 2px 0px var(--dash-sh-l, #ffffff);
+}
+
+.client__avatar > img {
+  position: absolute;
+  left: -6.47%;
+  top: -3.44%;
+  width: 114.02%;
+  height: 106.67%;
+  max-width: none;
+}
+
+.client__avatar-inset {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 1px 1px 3px 0px var(--dash-rim-2, #8795a1);
+}
+
+.client__name {
+  position: relative;
+  flex: 0 0 auto;
+  /* The text node's own box is 112px wide in the file. Pinning it means the
+     chevron after it lands where the design puts it, instead of drifting with
+     the browser's own advance widths for this string. */
+  width: 112px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+.client__chevron {
+  position: relative;
+  flex: 0 0 auto;
+  width: 34px;                     /* 14px glyph + 10px padding each side */
+  height: 14px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.client__chevron > svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  transform: scaleY(-1);           /* the design flips this one vertically */
+}
+
+/* ---- theme (sun) and bell: two raised cells ------------------------------ */
+
+.tb-cell-linkbox {
+  position: absolute;
+  left: 1425px;
+  top: 37px;
+  width: 60px;
+  height: 40px;
+}
+
+.tb-cell-linkbox--bell {
+  left: 1483px;
+}
+
+/* 683:3201 and 683:3208 — the raised cells. Their fill is white at 0.2% opacity,
+   so whatever sits under them stays visible; only the shadows read. */
+.tb-cell {
+  position: absolute;
+  width: 38px;
+  height: 37px;
+  border-radius: 8px;
+  background: var(--dash-surface-card, rgba(255, 255, 255, 0.002));
+  pointer-events: none;
+  /* Layer order is the one Figma itself emits, which is the reverse of its raw
+     effects array. In CSS the first shadow paints on top, so the order is not
+     cosmetic — it must match, and it matches .client__shadow below. */
+  box-shadow:
+         11px 11px 20px -5px var(--dash-sh-d-53, rgba(176, 196, 219, 0.53)),
+         -3px -3px  8px  4px var(--dash-sh-l, #ffffff),
+          3px  3px  3px  0px var(--dash-sh-d-51, rgba(196, 206, 218, 0.51)),
+    inset  1px  1px  1px  0px var(--dash-sh-l, #ffffff);
+}
+
+.tb-cell--sun  { left: 1430px; top: 40px; }
+.tb-cell--bell { left: 1488px; top: 40px; }
+
+/* node 683:3202 is a TEXT node holding U+263C. That codepoint is in none of
+   the three shipped fonts, so it is not typed as a character anywhere. The vector
+   below is Figma's own render of that node, placed at the exact ink box the file
+   reports for it.
+   The text node's own opacity 0.9 is already baked into that export, on the path
+   itself — repeating it here would multiply the two into 0.81, so it is not set. */
+.tb-sun {
+  position: absolute;
+  left: 1436.9685px;
+  top: 46.2898px;
+  width: 25.0568px;
+  height: 25.0568px;
+  /* This is a real <button> now. Every piece of user-agent button styling is
+     switched off so the box it occupies, and everything it paints, stay exactly
+     what the plain span painted before. .tb-cell above it turns pointer events
+     off for the decorative topbar, so the one real control turns them back on. */
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  font: inherit;
+  color: var(--dash-ink-1, #162946);
+  line-height: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Paired artwork, the landing's mechanism. The names are this board's own rather
+   than the landing's is-on-* so that nothing collides when both stylesheets load on
+   one page, and the pair is scoped to #board for the same reason. The default with
+   no attribute is the light glyph, matching the light-by-default rule above. */
+#board .dash-on-dark  { display: none; }
+#board .dash-on-light { display: block; }
+[data-theme="dark"] #board .dash-on-dark  { display: block; }
+[data-theme="dark"] #board .dash-on-light { display: none; }
+
+.tb-sun > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tb-bell-clip {
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+}
+
+.tb-bell {
+  position: absolute;
+  left: 7.4994px;
+  top: 7.3976px;
+  width: 25px;
+  height: 25.2047px;
+}
+
+.tb-bell > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- project line: 683:3253 / 3256 / 3255 / 3254 ------------------------- */
+
+/* 683:3253 — RECTANGLE with an IMAGE fill, scaleMode FILL. Raster in the design,
+   kept raster at its design size. */
+.tb-signal {
+  position: absolute;
+  left: 630px;
+  top: 89px;
+  width: 57px;
+  height: 57px;
+  object-fit: cover;               /* = Figma scaleMode FILL */
+  display: block;
+  pointer-events: none;
+}
+
+/* Figma leaves line-height AUTO on all three; the live box is 27px tall, and the
+   shipped Open Sans reports a natural content height of 27.236px at 20px — so
+   vertical CENTER and TOP differ by 0.12px here, not by a pixel. All three sit on
+   one baseline in the design and all three carry the same pinned 27px. */
+.tb-project,
+.tb-client,
+.tb-linestat {
+  position: absolute;
+  top: 103px;
+  height: 27px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-size: 20px;
+  letter-spacing: 0;
+  line-height: 27px;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+.tb-project  { left: 408px; width:  80px; font-weight: 700; }
+.tb-client   { left: 494px; width: 133px; font-weight: 400; text-transform: uppercase; }
+.tb-linestat { left: 690px; width: 157px; font-weight: 400; }
+
+
+/* =============================================================================
+   ZONE 3 — FOUR KPI CARDS · FROZEN
+   Live values: four bodies 323.39/323.41 x 91 at plate-local y 164, radius 10,
+   fill white at 0.2% opacity, one six-layer convex shadow shared by all four.
+   Inside each: a 40x18 percent chip and a 94x44 value field, both radius 8,
+   both solid white with their own inset recipes; the value fields also carry a
+   2px white INSIDE stroke of their own — the only strokes in the frame.
+   In CSS the first shadow paints on top, so layer order is load-bearing. The card
+   bodies and the chips use the order Figma emits (the reverse of its raw effects
+   array). The value fields are the stated exception: they use the raw array order,
+   because that is the one the file's own render shows. See the rule for the numbers.
+   ========================================================================== */
+
+/* The wrapper spans the whole plate, so it must stay transparent to input or it
+   would sit on top of the frozen sidebar and topbar and swallow their text
+   selection. pointer-events is inherited, so the text runs opt back in below. */
+.kpi-zone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* the four card bodies — nodes 683:3172 / 3229 / 3237 / 3236 */
+.kpi-card {
+  position: absolute;
+  height: 91px;
+  border-radius: 10px;
+  background: var(--dash-surface-card, rgba(255, 255, 255, 0.002));
+  pointer-events: none;
+  box-shadow:
+     1px  1px  3px 0px var(--dash-sh-d, #c4ceda),
+    -4px  0px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+     0px -4px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+    -2px -2px 14px 4px var(--dash-sh-l, #ffffff),
+     3px  3px  8px 0px var(--dash-sh-d-deep, #b0c4db),
+     3px  3px 15px 0px var(--dash-sh-d, #c4ceda);
+}
+
+/* empty margin frames in the design — they paint nothing, kept for the record */
+.kpi-margin {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* percent chips — nodes 683:3211 / 3232 / 3243 / 3250.
+   Layer order is the one Figma emits; measured against the file's own render it is
+   the right way round here (shadow-only residual ~2 either way it is 2x worse). */
+.kpi-chip {
+  position: absolute;
+  width: 40px;
+  height: 18px;
+  border-radius: 8px;
+  background: var(--dash-surface-well, #ffffff);
+  pointer-events: none;
+  box-shadow:
+    inset  3px  3px 7px -2px var(--dash-sh-d, #c4ceda),
+    inset -3px -2px 7px  0px var(--dash-sh-l, #ffffff);
+}
+
+/* recessed value fields — nodes 683:3218 / 3221 / 3224 / 3227 */
+.kpi-value {
+  position: absolute;
+  width: 94px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--dash-surface-well, #ffffff);
+  pointer-events: none;
+  /* These four are the only nodes in the frame carrying a stroke of their own:
+     strokeWeight 2, strokeAlign INSIDE, solid white — verified live. It is drawn as
+     the topmost inset ring rather than a real CSS border on purpose: box-sizing is
+     border-box here, so a border would shrink the padding box and drag both inset
+     shadows 2px inward, which the design does not do. Figma anchors the inner shadow
+     to the shape and paints the stroke over it, and the ring reproduces exactly that.
+     Layer order of the two shadows is the REVERSE of the one Figma emits; measured
+     against the file's own render that is the order it actually shows. The chips
+     above keep Figma's emitted order, because there the emitted order is the match. */
+  box-shadow:
+    inset  0px  0px 0px   2px var(--dash-sh-l, #ffffff),
+    inset -3px -2px 7px   0px var(--dash-sh-l, #ffffff),
+    inset  1px  2px 9.8px -2px var(--dash-sh-k, #000000);
+}
+
+/* ---- text -------------------------------------------------------------- */
+
+.kpi-title,
+.kpi-pct,
+.kpi-sub,
+.kpi-num { pointer-events: auto; }
+
+/* card titles — Open Sans SemiBold 12, uppercase, live line-height 20px */
+.kpi-title {
+  position: absolute;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 22.2px;   /* box stays 20px; +1.1px baseline, measured */
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+/* Card 1's title box is 159x0 in the design and the text is centred on it, so it
+   paints outside its own box. line-height 0 is the file's real value and is what
+   produces that; nothing may clip it. */
+.kpi-title--zerobox {
+  height: 0;
+  line-height: 2.3px;  /* file value 0; +1.15px baseline, measured */
+  overflow: visible;
+}
+
+/* percent readouts inside the chips */
+.kpi-pct {
+  position: absolute;
+  height: 16px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18.2px;   /* box stays 16px; +1.1px baseline, measured */
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+/* card 1's chip is the one Manrope readout of the four */
+.kpi-pct--manrope {
+  font-family: 'Manrope', sans-serif;
+  font-variation-settings: normal;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+/* the "от …" subtitles beside each chip */
+.kpi-sub {
+  position: absolute;
+  height: 16px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 18.2px;   /* box stays 16px; +1.1px baseline, measured */
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+.kpi-sub--title   { text-transform: capitalize; }   /* textCase TITLE in the design */
+.kpi-sub--manrope { font-family: 'Manrope', sans-serif; font-variation-settings: normal;
+                    font-weight: 500; line-height: 18px; }
+
+/* the big numbers — Open Sans Bold 35, live line-height 35px */
+.kpi-num {
+  position: absolute;
+  height: 35px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 700;
+  font-size: 35px;
+  line-height: 35px;
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+
+/* =============================================================================
+   ZONE 4 — OPERATORS TABLE · FROZEN
+   Live values: block body 1354x386 at plate-local 405.61·289, radius 10, fill
+   white at 0.2% opacity, the same six-layer convex shadow as the KPI cards.
+   Nine recessed fields (three per row), all radius 8, solid white, one shared
+   inset recipe. Verified live: none of the nine carries a stroke — unlike the
+   KPI value fields — but the three operator badges do.
+   ========================================================================== */
+
+:root {
+  --dash-status-live:     #00a734;   /* "Разговаривает" — the design's own green   */
+  --dash-status-email:    #fe9104;   /* "Пишет Email"   — the design's own orange  */
+  --dash-ring:     #eaeaea;   /* the disc behind each operator photo        */
+  --dash-icon:     #8a97a5;   /* sound-wave glyph                           */
+}
+
+.ops-zone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;     /* the wrapper spans the plate; text opts back in */
+}
+
+.ops-zone .ops-heading,
+.ops-zone .ops-col,
+.ops-zone .op-badge-num,
+.ops-zone .op-status,
+.ops-zone .op-task,
+.ops-zone .op-client,
+.ops-zone .op-time,
+.ops-zone .op-next { pointer-events: auto; }
+
+/* node 683:2849 — body: only the shadow reads, the fill is all but transparent */
+.ops-card {
+  position: absolute;
+  left: 405.6088px;
+  top: 289px;
+  width: 1354px;
+  height: 386px;
+  border-radius: 10px;
+  background: var(--dash-surface-card, rgba(255, 255, 255, 0.002));
+  box-shadow:
+     1px  1px  3px 0px var(--dash-sh-d, #c4ceda),
+    -4px  0px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+     0px -4px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+    -2px -2px 14px 4px var(--dash-sh-l, #ffffff),
+     3px  3px  8px 0px var(--dash-sh-d-deep, #b0c4db),
+     3px  3px 15px 0px var(--dash-sh-d, #c4ceda);
+}
+
+/* node 683:2852 — the only heading in the frame carrying a shadow, and it is a
+   TEXT shadow in the design. Reproduced as text-shadow, never box-shadow. */
+.ops-heading {
+  position: absolute;
+  left: 426.6088px;
+  top: 309px;
+  width: 153px;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-transform: capitalize;      /* Figma textCase TITLE */
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+  text-shadow: 0px 1px 2px var(--dash-tsh, rgba(0, 0, 0, 0.25));
+}
+
+/* column titles — 683:2855 / 2856 / 2857 / 2859 / 2858 */
+.ops-col {
+  position: absolute;
+  top: 308px;
+  height: 22px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+/* ---- operator photo: disc, image, badge --------------------------------- */
+
+/* 683:2862 / 2869 / 2875 — the neumorphic disc BEHIND the photo. Its shadow is a
+   real Figma effect on this ellipse, not baked into the raster. */
+.op-ring {
+  position: absolute;
+  left: 429.6732px;
+  width: 86.8033px;
+  height: 86px;
+  border-radius: 50%;
+  background: var(--dash-ring);
+  box-shadow:
+     4px  2px 5px   0px var(--dash-sh-k-20, rgba(0, 0, 0, 0.2)),
+    -5px -5px 8.8px 0px var(--dash-sh-l-45, rgba(255, 255, 255, 0.45));
+}
+
+/* 683:2863 / 2870 / 2876 — the photo itself. These stay rasters: they are real
+   people. Each fill is scaleMode CROP with its own imageTransform, so the image
+   is sized and offset per row from that matrix rather than object-fit'ed. */
+.op-photo {
+  position: absolute;
+  left: 426.6088px;
+  width: 91.9094px;
+  height: 91px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.op-photo > img {
+  position: absolute;
+  max-width: none;
+  display: block;
+}
+
+/* 683:2865 / 2872 / 2878 — the numbered badge. 2px white stroke, INSIDE-aligned,
+   drawn as a ring so it cannot shrink the box. */
+.op-badge {
+  position: absolute;
+  left: 491.6088px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--dash-sh-l, #ffffff);
+}
+
+.op-badge-num {
+  position: absolute;
+  left: 497.6088px;
+  width: 14px;
+  height: 16px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 18.2px;             /* box 16px; +1.1px baseline, measured */
+  letter-spacing: 0;
+  color: var(--dash-ink-on-dark, #ffffff);
+  white-space: nowrap;
+}
+
+/* ---- the nine recessed fields ------------------------------------------- */
+/* Same inset recipe on all nine, in the order Figma emits. Verified live: no
+   strokes on any of them.
+   Spread is 0, not -2. The two sources disagreed here — the plugin read returned
+   -2 while reference/04-ТЕНИ (Figma's own emitted CSS) records 0 — so the file's
+   render decided it: rendering both candidates and comparing edge profiles against
+   it, spread 0 matches within a few grey levels while -2 draws the recess a full
+   2px shallower on every edge of all nine fields. The KPI chips genuinely do use
+   -2 (both sources agree there); these do not. */
+.op-field {
+  position: absolute;
+  height: 60px;
+  border-radius: 8px;
+  background: var(--dash-surface-well, #ffffff);
+  box-shadow:
+    inset  3px  3px 7px 0px var(--dash-sh-d, #c4ceda),
+    inset -3px -2px 7px 0px var(--dash-sh-l, #ffffff);
+}
+
+.op-field--status { left: 534.6088px;  width: 762px; }
+.op-field--act    { left: 1311.6088px; width: 154px; }
+.op-field--next   { left: 1481.6088px; width: 246px; }
+
+/* ---- status column ------------------------------------------------------ */
+
+.op-dot {
+  position: absolute;
+  left: 553.6088px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* The status colours are the design's own and are set per row in the markup:
+   green for "Разговаривает", orange for "Пишет Email". Nothing recolours them. */
+.op-status {
+  position: absolute;
+  left: 566.6088px;
+  height: 25px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 25px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.op-task,
+.op-client,
+.op-time,
+.op-next {
+  position: absolute;
+  height: 22px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+.op-task   { left: 759.6088px;  width: 101px; }
+.op-client { left: 947.6088px;  width: 112px; }
+.op-time   { left: 1395.6088px; width:  41px; }
+.op-next   { left: 1496.6088px; width: 206px; }
+
+/* ---- activity column ---------------------------------------------------- */
+/* Rows 1-2 carry a 12-bar sound wave, row 3 an email glyph instead — exactly as
+   the design has it. Both keep their own colour; nothing is recoloured. */
+.op-wave,
+.op-email {
+  position: absolute;
+}
+
+.op-wave > svg,
+.op-email > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.op-timer {
+  position: absolute;
+  left: 1440.6088px;
+  width: 14px;
+  height: 16px;
+}
+
+.op-timer > svg {
+  display: block;
+  width: 14px;
+  height: 16px;
+}
+
+
+/* =============================================================================
+   ZONE 5 — BITRIX24 LIVE · FROZEN
+   Live values: block body 511x295 at plate-local 405.61·705, radius 10, fill white
+   at 0.2% opacity, the six-layer convex shadow shared with the other cards.
+   Five feed rows drawn as a dashed hairline table: 0.5px #162946 with a 1/1 dash,
+   INSIDE-aligned, no fill; rows 1-4 omit their bottom edge so borders never double,
+   the first row rounds its top corners and the last its bottom ones.
+   Each row's icon sits on TWO overlapping recessed plates, exactly as the design has
+   it. Every glyph was cut from Figma's own render of the block.
+   ========================================================================== */
+
+.bx-zone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;      /* wrapper spans the plate; text opts back in below */
+}
+
+.bx-zone .bx-heading,
+.bx-zone .bx-link,
+.bx-zone .bx-time,
+.bx-zone .bx-text { pointer-events: auto; }
+
+/* node 683:3124 — only the shadow reads; the fill is all but transparent */
+.bx-card {
+  position: absolute;
+  left: 405.6088px;
+  top: 705px;
+  width: 511px;
+  height: 295px;
+  border-radius: 10px;
+  background: var(--dash-surface-card, rgba(255, 255, 255, 0.002));
+  box-shadow:
+     1px  1px  3px 0px var(--dash-sh-d, #c4ceda),
+    -4px  0px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+     0px -4px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+    -2px -2px 14px 4px var(--dash-sh-l, #ffffff),
+     3px  3px  8px 0px var(--dash-sh-d-deep, #b0c4db),
+     3px  3px 15px 0px var(--dash-sh-d, #c4ceda);
+}
+
+/* ---- heading and link --------------------------------------------------- */
+
+.bx-mark {
+  position: absolute;
+  left: 418.6088px;
+  top: 725px;
+  width: 17px;
+  height: 17px;
+}
+
+.bx-mark > svg,
+.bx-link-arrow > svg,
+.bx-ic > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 683:3166 — one text node, two runs, one text-shadow. */
+.bx-heading {
+  position: absolute;
+  left: 443.6088px;
+  top: 723px;
+  width: 118px;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-transform: capitalize;      /* Figma textCase TITLE */
+  white-space: nowrap;
+  text-shadow: 0px 1px 2px var(--dash-tsh, rgba(0, 0, 0, 0.25));
+}
+
+.bx-heading__a { color: var(--dash-ink-1, #162946); }
+.bx-heading__b { color: var(--dash-ink-2, #446079); }
+
+.bx-link {
+  position: absolute;
+  left: 751.6088px;
+  top: 726px;
+  width: 138px;
+  height: 15px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 15px;
+  letter-spacing: 0;
+  color: var(--dash-ink-2);
+  white-space: nowrap;
+}
+
+.bx-link-arrow {
+  position: absolute;
+  left: 894.6088px;
+  top: 732px;
+  width: 8.436px;
+  height: 8.2133px;
+}
+
+/* ---- the five feed rows ------------------------------------------------- */
+/* A dashed hairline table. Live: stroke #162946, dashPattern 1/1, strokeAlign
+   INSIDE, per-side weights top/right/left 0.5 and bottom 0 on rows 1-4, all four
+   sides 0.5 on row 5. No fill on any of them. */
+/* Drawn as a vector, not a CSS border: `border-style: dashed` picks its own dash
+   length, while the design specifies a 1px-on / 1px-off pattern on a 0.5px stroke.
+   Three details, each settled by rendering the alternatives against the design's own
+   render rather than by reasoning:
+     · every edge is its own <path> with its own dash phase — one stroke-dashoffset
+       cannot phase two edges that sit at different distances along one outline, which
+       left the last row's bottom border a full pixel out of step with the rest;
+     · the paths are inset by half the stroke for strokeAlign INSIDE, and the corner
+       arcs keep the box's own corner centre while their radius drops by that same
+       half-weight (10 -> 9.75), which is what offsetting a rounded corner inward does;
+     · the dash phase is computed against a WHOLE-pixel origin, not the row's fractional
+       left. Chrome rasterises the inline SVG from a snapped origin, so phasing against
+       478.6088 smeared every dash across two columns (per-column ink 61/41) while
+       phasing against 479 lands them on the design's own columns (101/0 against the
+       design's 90/12). */
+.bx-row {
+  position: absolute;
+  left: 418.6088px;
+  width: 484px;
+  height: 42px;
+}
+
+.bx-row > svg {
+  display: block;
+  width: 484px;
+  height: 42px;
+  overflow: visible;
+}
+
+/* the two overlapping recessed plates under each row icon */
+.bx-plate {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--dash-surface-well, #ffffff);
+  box-shadow:
+    inset  3px  3px 7px -2px var(--dash-sh-d, #c4ceda),
+    inset -3px -2px 7px  0px var(--dash-sh-l, #ffffff);
+}
+
+.bx-ic { position: absolute; }
+
+.bx-time {
+  position: absolute;
+  left: 430.6088px;
+  width: 46px;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+/* U+2192 stays in the copy but is not painted by the browser: Open Sans has no such
+   glyph, so the fallback draws a much wider arrow than the design. Figma's own outline
+   of it is placed over the exact spot instead. */
+.bx-glyph-slot {
+  color: transparent;
+  display: inline-block;
+  width: 15px;            /* U+2192 sits outside every shipped subset, so a system
+                             font would otherwise decide this advance; 15px is what
+                             the reference render already uses, pinned here */
+}
+
+.bx-text-arrow {
+  position: absolute;
+  left: 700.4659px;
+  top: 914.115px;
+  width: 10.38px;
+  height: 3.51px;
+}
+
+.bx-text-arrow > svg { display: block; width: 100%; height: 100%; }
+
+.bx-text {
+  position: absolute;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+/* ===== ZONE 6 — LAST CALLS · FROZEN =====================================
+   Plate-local coordinates, every number read live from the remote MCP.
+   Text line-heights are pinned to each text node's own MCP box height
+   (18px->20, 12px->16, 11px->15); nothing is left to "auto".            */
+
+.lc-zone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;      /* wrapper spans the plate; text opts back in below */
+}
+
+.lc-zone .lc-heading,
+.lc-zone .lc-link,
+.lc-zone .lc-time,
+.lc-zone .lc-company { pointer-events: auto; }
+
+/* 683:2991 — bare rectangle, white at 0.2%, six-layer convex shadow.
+   No stroke on this node: fills, strokes and effects were all queried. */
+.lc-card {
+  position: absolute;
+  left: 942.6088px;
+  top: 705px;
+  width: 420px;
+  height: 295px;
+  border-radius: 10px;
+  background: var(--dash-surface-card, rgba(255, 255, 255, 0.002));
+  box-shadow:
+     1px  1px  3px 0px var(--dash-sh-d, #c4ceda),
+    -4px  0px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+     0px -4px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+    -2px -2px 14px 4px var(--dash-sh-l, #ffffff),
+     3px  3px  8px 0px var(--dash-sh-d-deep, #b0c4db),
+     3px  3px 15px 0px var(--dash-sh-d, #c4ceda);
+}
+
+.lc-heading {
+  position: absolute;
+  left: 956.6088px;
+  top: 723px;
+  width: 194px;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 20px;               /* Figma var --line-height/20 */
+  letter-spacing: 0;
+  text-transform: capitalize;      /* Figma textCase TITLE */
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+  text-shadow: 0px 1px 2px var(--dash-tsh, rgba(0, 0, 0, 0.25));
+}
+
+.lc-link {
+  position: absolute;
+  left: 1274.6088px;
+  top: 726px;
+  width: 62px;
+  height: 15px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 15px;
+  letter-spacing: 0;
+  color: var(--dash-ink-2, #446079);
+  white-space: nowrap;
+}
+
+.lc-link-arrow {
+  position: absolute;
+  left: 1340.7748px;
+  top: 730.3899px;
+  width: 8.436px;
+  height: 8.2133px;
+}
+
+/* ---- the row table ----------------------------------------------------
+   Five 42px rows on an exact 42px step with shared edges, so the six
+   hairlines are the top of each row plus the bottom of the last. Each
+   outline is a vector, not a CSS dashed border: the browser's own dash
+   rhythm does not match Figma's. Every edge is its own <path> with its own
+   phase, and the corner arcs are inset by half the 0.5px stroke (r 10 ->
+   9.75, centre kept).
+   The pitch is NOT 2px. The Bitrix table's dash path is 568px — exactly 284
+   dashes — so there Figma lands on 2.000 and that hairline keeps one phase
+   across its whole width. This table's path is 476.5px, not a whole number
+   of dashes, so Figma refits the pitch: the dashes drift out of the pixel
+   grid and back, crisp at both ends of the row and flattening to an even
+   grey around the middle, exactly as the file's own render shows. Pitch
+   0.999+0.999 and the two phases below were fitted against that render;
+   all six hairlines independently agreed on the same pair. */
+.lc-row {
+  position: absolute;
+  left: 955.6088px;
+  width: 393px;
+  height: 42px;
+}
+
+.lc-row > svg {
+  display: block;
+  width: 393px;
+  height: 42px;
+  overflow: visible;
+}
+
+/* ---- play disc: glow on its own oversized canvas, disc, then the arrow.
+   The glow SVG is 49.8 wide for a 27px disc, so it is placed by its own
+   canvas box, not by the layer box (the zone-4 avatar lesson). The arrow
+   sits at +10.5/+7.5 inside the disc — optically right of centre, exactly
+   as Figma's own render places it. */
+.lc-play-glow  { position: absolute; left: 953.8088px; width: 49.8px;    height: 49.8px; }
+.lc-play-face  { position: absolute; left: 967.6088px; width: 27px;      height: 27px; }
+.lc-play-arrow { position: absolute; left: 978.1088px; width: 9.16667px; height: 11.7857px; }
+
+.lc-time {
+  position: absolute;
+  left: 1004.6088px;
+  width: 31px;
+  height: 16px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 17.21px;  /* box stays 16px; +0.605px baseline, measured */
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+.lc-company {
+  position: absolute;
+  left: 1042.6088px;
+  width: 121px;
+  height: 16px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 17.21px;  /* box stays 16px; +0.605px baseline, measured */
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+.lc-wave { position: absolute; left: 1227.6088px; width: 60px; height: 19.6892px; }
+
+/* 683:3004 / 3039 / 3060 / 3081 / 3103 — recessed white square, Figma style fx/11 */
+.lc-dl {
+  position: absolute;
+  left: 1306.6088px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--dash-surface-well, #ffffff);
+  box-shadow:
+    inset  3px  3px 7px -2px var(--dash-sh-d, #c4ceda),
+    inset -3px -2px 7px  0px var(--dash-sh-l, #ffffff);
+}
+
+.lc-dl-ic { position: absolute; left: 1314.6088px; width: 15px; height: 15px; }
+
+.lc-link-arrow > svg,
+.lc-play-glow > svg,
+.lc-play-face > svg,
+.lc-play-arrow > svg,
+.lc-wave > svg,
+.lc-dl-ic > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== ZONE 7 — PROJECT COST · FROZEN ===================================
+   Plate-local coordinates, every number read live from the remote MCP.
+   Text line-heights are pinned to each text node's own MCP box height;
+   nothing is left to "auto".                                            */
+
+.cost-zone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;      /* wrapper spans the plate; text opts back in below */
+}
+
+.cost-zone .cost-heading,
+.cost-zone .cost-link,
+.cost-zone .cost-amount,
+.cost-zone .cost-lbl,
+.cost-zone .cost-bar-label,
+.cost-zone .cost-note,
+.cost-zone .cost-rowtext,
+.cost-zone .cost-chipval { pointer-events: auto; }
+
+/* 683:2957 — bare rectangle, white at 0.2%, six-layer convex shadow, no stroke */
+.cost-card {
+  position: absolute;
+  left: 1388.6088px;
+  top: 705px;
+  width: 371px;
+  height: 295px;
+  border-radius: 10px;
+  background: var(--dash-surface-card, rgba(255, 255, 255, 0.002));
+  box-shadow:
+     1px  1px  3px 0px var(--dash-sh-d, #c4ceda),
+    -4px  0px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+     0px -4px  3px 0px var(--dash-sh-l-60, rgba(255, 255, 255, 0.6)),
+    -2px -2px 14px 4px var(--dash-sh-l, #ffffff),
+     3px  3px  8px 0px var(--dash-sh-d-deep, #b0c4db),
+     3px  3px 15px 0px var(--dash-sh-d, #c4ceda);
+}
+
+.cost-heading {
+  position: absolute;
+  left: 1405.6088px;
+  top: 723px;
+  width: 201px;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 20px;               /* Figma var --line-height/20 */
+  letter-spacing: 0;
+  text-transform: capitalize;      /* Figma textCase TITLE */
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+  text-shadow: 0px 1px 2px var(--dash-tsh, rgba(0, 0, 0, 0.25));
+}
+
+.cost-link {
+  position: absolute;
+  left: 1654.6088px;
+  top: 726px;
+  width: 74px;
+  height: 15px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 15px;
+  letter-spacing: 0;
+  color: var(--dash-ink-2, #446079);
+  white-space: nowrap;
+}
+
+.cost-link-arrow {
+  position: absolute;
+  left: 1732.6088px;
+  top: 730.3899px;
+  width: 8.4365px;
+  height: 8.2133px;
+}
+
+/* ---- the two amounts --------------------------------------------------
+   Both currency marks are drawn on a canvas wider and taller than their
+   layer box because the drop shadow is baked into the drawing, so each is
+   sized and placed by its own canvas — the zone-4 avatar lesson. */
+.cost-dram { position: absolute; }
+.cost-dram--big { width: 22.1945px; height: 24.5px; }
+.cost-dram--sm  { left: 1670.6088px; width: 16px; height: 19px; }
+
+.cost-amount {
+  position: absolute;
+  top: 762px;
+  height: 30px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 300;
+  font-size: 22px;
+  line-height: 30px;
+  letter-spacing: 0;
+  text-align: right;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+  text-shadow: 0px 1px 4px var(--dash-tsh, rgba(0, 0, 0, 0.25));
+}
+
+.cost-lbl {
+  position: absolute;
+  top: 793px;
+  height: 16px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 17px;  /* MCP box 16px; Chrome steps this line by whole pixels, 17px lands closest */
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+/* ---- 683:2963 the progress bar ---------------------------------------
+   Outer four-layer shadow on the wrapper, inner two-layer shadow as a
+   separate overlay painted OVER the fill and the label, which is how the
+   design stacks it. Radius is Figma's --opacity/100 = 100px, a full pill. */
+.cost-bar {
+  position: absolute;
+  left: 1404.6088px;
+  top: 827px;
+  width: 337px;
+  height: 22px;
+  border-radius: 100px;
+  background: var(--dash-surface-page, #f1f2f6);
+  box-shadow:
+    -14px -14px 19px 0px var(--dash-sh-l, #ffffff),
+      5px   5px  7px 0px var(--dash-sh-d, #c4ceda),
+     -1px  -1px 10px 0px var(--dash-sh-l, #ffffff),
+      1px   1px  3px 0px var(--dash-sh-d, #c4ceda);
+}
+
+.cost-bar-fill {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 205px;
+  height: 14px;
+  border-radius: 100px;
+  background: linear-gradient(to right, var(--dash-bar-from, rgba(22, 41, 70, 0.46)), var(--dash-bar-to, #162946));
+}
+
+.cost-bar-label {
+  position: absolute;
+  left: 299px;
+  top: 3px;
+  width: 31px;
+  height: 16px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 17px;  /* MCP box 16px; +1px step, measured best */
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+}
+
+.cost-bar-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset -5px -5px 4px 0px var(--dash-sh-l-64, rgba(255, 255, 255, 0.64)),
+    inset  1px  1px 3px 0px var(--dash-sh-d, #c4ceda);
+}
+
+/* ---- 683:2958 the footnote; the first run is the design's own red ----- */
+.cost-note {
+  position: absolute;
+  left: 1404.6088px;
+  top: 862px;
+  width: 336px;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+.cost-note__red { color: var(--dash-danger, #fc2f37); }
+
+/* ---- the row table ----------------------------------------------------
+   Two 42px rows on the same y as the last two rows of the Bitrix and calls
+   tables, so all three bottom tables line up. The outlines are vectors, not
+   CSS dashed borders. Figma refits the dash pitch to the path length, which
+   here is 420.5px and not a whole number of dashes, so the dashes drift out
+   of the pixel grid and back exactly as its own render shows; the pitch and
+   all three phases below were swept against that render. */
+.cost-row {
+  position: absolute;
+  left: 1404.6088px;
+  width: 337px;
+  height: 42px;
+}
+
+.cost-row > svg {
+  display: block;
+  width: 337px;
+  height: 42px;
+  overflow: visible;
+}
+
+.cost-rowtext {
+  position: absolute;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+}
+
+/* 683:2959 / 683:2960 — recessed chip, Figma style fx/11 */
+.cost-chip {
+  position: absolute;
+  left: 1665.6088px;
+  width: 66px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--dash-surface-well, #ffffff);
+  box-shadow:
+    inset  3px  3px 7px -2px var(--dash-sh-d, #c4ceda),
+    inset -3px -2px 7px  0px var(--dash-sh-l, #ffffff);
+}
+
+.cost-chipval {
+  position: absolute;
+  left: 1685.6088px;
+  width: 37px;
+  height: 22px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: 0;
+  text-align: right;
+  color: var(--dash-ink-1, #162946);
+  white-space: nowrap;
+  text-shadow: 0px 1px 4px var(--dash-tsh, rgba(0, 0, 0, 0.25));
+}
+
+.cost-link-arrow > svg,
+.cost-dram > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== ZONE 8 — FOOTER · FROZEN =========================================
+   node 683:3258, frame (0, 1112) 1920x88. This block sits OUTSIDE the plate,
+   directly on the frame, so these are frame coordinates with no plate origin
+   subtracted. Both line-heights are Figma's own --line-height/20 = 20px.   */
+
+.ft-zone {
+  position: absolute;
+  left: 0;
+  top: 1112px;
+  width: 1920px;
+  height: 88px;
+  pointer-events: none;      /* nothing here is a control yet; text opts back in */
+}
+
+.ft-zone .ft-live,
+.ft-zone .ft-copy { pointer-events: auto; }
+
+/* 683:3259 — the design centres this line on x 950.5 */
+.ft-live {
+  position: absolute;
+  left: 823.5px;
+  top: 24px;
+  width: 254px;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 21px;  /* Figma line-height 20px; Chrome steps this line by whole pixels and 21px lands on it, measured */
+  letter-spacing: 0;
+  text-align: center;
+  color: var(--dash-ink-footer, #bac1cc);
+  white-space: nowrap;
+}
+
+/* 683:3260 — a bare positioning frame in the design, no fill or stroke */
+.ft-copy-wrap {
+  position: absolute;
+  left: 779.095px;
+  top: 43.5px;
+  width: 342.81px;
+  height: 20px;
+}
+
+/* 683:3261 — an empty hotspot frame in the design: it draws nothing and holds
+   no address. Kept so the node map stays complete; it paints no pixel. */
+.ft-link {
+  position: absolute;
+  left: 123px;
+  top: 1.5px;
+  width: 104.83px;
+  height: 17px;
+}
+
+/* 683:3263 — ONE text node, six runs. Figma's inspector emits overflow-hidden
+   and text-ellipsis here, but its own render shows the sentence whole, ending
+   exactly on the box edge, so nothing clips it. */
+.ft-copy {
+  position: absolute;
+  left: 19.9043px;
+  top: 0.5px;
+  width: 303px;
+  height: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 21px;  /* Figma line-height 20px; Chrome steps this line by whole pixels and 21px lands on it, measured */
+  letter-spacing: 0;
+  text-align: center;
+  color: var(--dash-ink-footer, #bac1cc);
+  white-space: nowrap;
+}
+
+/* the company name is SemiBold ITALIC in the design's own orange; the full
+   stop after it is the same orange but upright */
+.ft-copy__brand {
+  font-weight: 600;
+  font-style: italic;
+  color: var(--dash-brand, #ff5500);
+}
+
+.ft-copy__dot { color: var(--dash-brand, #ff5500); }
+
+/* ===== COLOUR INSIDE THE INLINED VECTORS ================================
+   72 glyphs are inlined straight into the page, and their colour lives in a
+   fill= or stroke= attribute where a custom property cannot reach. A CSS
+   property outranks a presentation attribute, so the rules below repaint by
+   matching the attribute's VALUE. That keeps two-colour glyphs intact - each
+   path is matched by the rule for its own colour - and touches no markup.
+   fill="none" and fill="white" are deliberately not listed: the first paints
+   nothing, the second is the play arrow, which stays white on its dark disc.
+   ==================================================================== */
+#board [fill="#8A97A5" i]   { fill: var(--dash-icon, #8a97a5); }   /* the nine menu icons, sound waves, topbar glyphs */
+#board [fill="#162946" i]   { fill: var(--dash-ink-1, #162946); }   /* glyphs drawn in the primary ink */
+#board [fill="#EAEAEA" i]   { fill: var(--dash-ring, #eaeaea); }   /* the disc behind each operator photo, and the play glow */
+#board [fill="#333333" i]   { fill: var(--dash-disc, #333333); }   /* the play button's dark disc */
+#board [fill="#93A1AF" i]   { fill: var(--dash-icon-2, #93a1af); }   /* the second, cooler icon grey */
+#board [fill="#39D05F" i]   { fill: var(--dash-dot-live, #39d05f); }   /* the live dot inside the topbar signal mark */
+#board [fill="#446079" i]   { fill: var(--dash-ink-2, #446079); }   /* glyphs drawn in the secondary ink */
+#board [fill="#FE9104" i]   { fill: var(--dash-status-email, #fe9104); }   /* the envelope glyph on the writing-email row */
+#board [stroke="#162946" i] { stroke: var(--dash-grid, #162946); }   /* the dashed row grids of all three bottom tables */
+
+/* the operator status pair, moved out of nine inline style attributes so the
+   colour can be themed; the values are the design's own, unchanged */
+.op-badge--live   { background: var(--dash-badge-live,   #10d096); }
+.op-badge--email  { background: var(--dash-badge-email,  #ffa80b); }
+.op-dot--live     { background: var(--dash-status-live,  #00a734); }
+.op-dot--email    { background: var(--dash-status-email, #fe9104); }
+.op-status--live  { color:      var(--dash-status-live,  #00a734); }
+.op-status--email { color:      var(--dash-status-email, #fe9104); }
+
+/* ===== DARK THEME - CORE ==================================================
+   Colour only. Not one offset, blur, spread, radius, size or position changes,
+   so no box can move; the light theme above is untouched and still paints when
+   no attribute is set.
+
+   SOURCE. Every tone is the landing's own dark value (V:\repos\landing-03\css\
+   tokens.css). Its dark theme is the primary one and its light block was derived
+   from THIS dashboard's palette, so the translation already existed in reverse:
+     #212121 <- #EBF1F9 page      #000000 <- #c4ceda drop
+     #2F2F2F <- #ffffff key light #C9C9CF <- #446079 secondary ink
+   Where a light value carried an alpha, the ALPHA IS KEPT and only the hue swaps,
+   so every shadow keeps exactly the strength the design gave it. That is the
+   landing's own rule, stated in its light block.
+   ======================================================================== */
+
+[data-theme="dark"] {
+
+  /* ---- ground and surfaces ---------------------------------------------
+     The frame's three light layers collapse to one ground: the white base and
+     the flat grey both become #212121, the landing's page colour. The blue
+     sheen survives as a sweep from the landing's raised tone to nothing - an
+     opaque pale-blue patch would read as a lit rectangle on this ground, not
+     as a sheen. Both stops are the landing's own two surface tones. */
+  --dash-surface-base:   #212121;   /* landing --color-bg */
+  --dash-surface-page:   #212121;   /* landing --color-bg; plate and sidebar */
+  --dash-sheen-from:     #2f2f2f;   /* landing --color-sh-l, the raised tone */
+  --dash-sheen-to:       rgba(47, 47, 47, 0);
+  --dash-plate-rim:      #2f2f2f;   /* the plate's inside stroke is a raised edge, not ground */
+
+  /* A recess sits AT the ground plane, never above it - otherwise "pressed in"
+     reads as pressed in and floating at once. Same move the landing makes with
+     its form wells. */
+  --dash-surface-well:   #212121;
+
+  /* ---- neumorphic depth -------------------------------------------------
+     The whole illusion is one pair. On dark the light side is NOT white: it is
+     #2F2F2F, only a step above the ground, and it reads as a light source only
+     because it sits opposite pure black. Every white in the light theme becomes
+     that tone at its own alpha; every blue-grey becomes black at its own alpha. */
+  --dash-sh-l:           #2f2f2f;
+  --dash-sh-l-86:        rgba(47, 47, 47, 0.86);
+  --dash-sh-l-81:        rgba(47, 47, 47, 0.81);
+  --dash-sh-l-64:        rgba(47, 47, 47, 0.64);
+  --dash-sh-l-60:        rgba(47, 47, 47, 0.6);
+  --dash-sh-l-45:        rgba(47, 47, 47, 0.45);
+
+  --dash-sh-d:           #000000;   /* landing --color-sh-d */
+  --dash-sh-d-deep:      #000000;
+  --dash-sh-d-far:       #000000;
+  --dash-sh-d-78:        rgba(0, 0, 0, 0.78);
+  --dash-sh-d-64:        rgba(0, 0, 0, 0.64);
+  --dash-sh-d-57:        rgba(0, 0, 0, 0.57);
+  --dash-sh-d-53:        rgba(0, 0, 0, 0.53);
+  --dash-sh-d-52:        rgba(0, 0, 0, 0.52);
+  --dash-sh-d-51:        rgba(0, 0, 0, 0.51);
+  --dash-sh-d-43:        rgba(0, 0, 0, 0.43);
+  --dash-sh-d-24:        rgba(0, 0, 0, 0.24);
+  --dash-sh-d-14:        rgba(0, 0, 0, 0.14);
+
+  /* the two solid rims - the active menu item's well and the topbar avatar's
+     inner ring - are dark-side edges, so they follow the dark side */
+  --dash-rim:            #000000;
+  --dash-rim-2:          #000000;
+
+  /* ---- ink --------------------------------------------------------------
+     No pure white anywhere: at 12-16px on a near-black ground it haloes and
+     shimmers. The ladder keeps the light theme's order of importance, and each
+     rung is a tone the landing already uses for that same role. */
+  --dash-ink-1:          #e8edf4;   /* landing --color-svc-title; headings, values, tables */
+  --dash-ink-menu-active: #e8edf4;  /* the active item is the strongest ink, as in light */
+  --dash-ink-2:          #c9c9cf;   /* landing --color-ink-2, the exact reverse of #446079 */
+  --dash-ink-menu:       #98a2b3;   /* landing --color-about-dim; one rung below the nav ink,
+                                       because in the light design the menu label is lighter
+                                       than the secondary ink, and that order is preserved */
+  --dash-icon-menu:      #98a2b3;
+  --dash-icon:           #8a93a8;   /* landing --color-form-cap */
+  --dash-icon-2:         #8a93a8;
+  --dash-ink-footer:     #8a93a8;   /* landing paints its own footer copyright with this token */
+
+  /* ---- heading and amount shadows ---------------------------------------
+     In the light theme a black shadow presses dark navy text into a pale plate.
+     On this ground black under light text either disappears or smears, and the
+     landing's own dark h1 shadow is a different thing entirely - a wide soft
+     vignette under 76px display type, not a 1px emboss under 18px. So the
+     shadow is switched off rather than restated: the declarations stay, they
+     simply paint nothing, which keeps the change reversible in one value. */
+  --dash-tsh:            transparent;
+
+  /* the white core of the two baked drop-shadow filters; see the rule below */
+  --dash-glow:           #2f2f2f;
+
+  /* ---- the flooded body tone --------------------------------------------
+     Every carrier in his dark frame whose fill is rgba(255,255,255,0) and whose
+     stack is all-outer (the three lower blocks, the operator rows) shows a body
+     ONE step above the plate, not the raised tone. Read off frame 813:1114 as
+     rendered by Figma itself: plate #212121, body #222222, uniform edge to edge
+     (checked on the bitrix, calls and cost bodies and on all three operator
+     rows). CSS clips an outer shadow at the border box, so the body has to be
+     painted; this is the tone his own render puts there. */
+  --dash-card-flood:     #222222;
+
+  /* ---- the numbered badge on each operator photo ------------------------
+     Шеф repainted it in the dark frame after the eight fixes. Read live off
+     813:1485 / 1492 / 1498: each circle keeps its own status fill (#10D096,
+     #10D096, #FFA80B - unchanged) but its 2px ring turned from the raised tone
+     to plain white, and the three labels 813:1486 / 1493 / 1499 all carry his
+     variable zagalovka-big, #162946, where they used to be white. The disc
+     behind the photo (813:1482) was NOT touched: it is still #2f2f2f with the
+     same two shadows, which is what --dash-ring already holds. */
+  --dash-badge-ring:     #ffffff;
+  --dash-badge-num:      #162946;
+}
+
+/* The play button's halo and the four currency marks carry their shadow colour
+   inside a filter matrix, where no custom property can reach. The whole filter is
+   therefore swapped instead: each element keeps its light filter in the light
+   theme and points at a dark twin here. The twins differ from the originals in
+   one number each - white becomes the landing's raised tone at the same alpha. */
+[data-theme="dark"] [filter="url(#lc-play-glow-r1-filter0_dd_0_6)"] { filter: url(#lc-play-glow-r1-filter0_dd_0_6-dark); }
+[data-theme="dark"] [filter="url(#lc-play-glow-r2-filter0_dd_0_6)"] { filter: url(#lc-play-glow-r2-filter0_dd_0_6-dark); }
+[data-theme="dark"] [filter="url(#lc-play-glow-r3-filter0_dd_0_6)"] { filter: url(#lc-play-glow-r3-filter0_dd_0_6-dark); }
+[data-theme="dark"] [filter="url(#lc-play-glow-r4-filter0_dd_0_6)"] { filter: url(#lc-play-glow-r4-filter0_dd_0_6-dark); }
+[data-theme="dark"] [filter="url(#lc-play-glow-r5-filter0_dd_0_6)"] { filter: url(#lc-play-glow-r5-filter0_dd_0_6-dark); }
+
+/* The four dram marks carry a shadow of their own, baked into a filter: a single
+   BLACK layer at 21%, not the white glow the play button carries. On this ground
+   a black shadow under a light glyph does no visible harm, which is why it was
+   missed - but the amount standing beside each mark has its own shadow switched
+   off on dark (--dash-tsh: transparent), so the pair disagreed: the number lost
+   its shadow while the currency mark beside it kept one.
+   The marks now follow the amounts. Switching the filter off rather than giving
+   it a dark twin is the same decision --dash-tsh makes, expressed the only way a
+   baked filter allows; it changes no geometry, since filters do not affect
+   layout. In the light theme all four are untouched. */
+[data-theme="dark"] [filter="url(#cost-dram-big-a-filter0_d_0_4)"],
+[data-theme="dark"] [filter="url(#cost-dram-big-b-filter0_d_0_4)"],
+[data-theme="dark"] [filter="url(#cost-dram-small-r1-filter0_d_0_4)"],
+[data-theme="dark"] [filter="url(#cost-dram-small-r2-filter0_d_0_4)"] { filter: none; }
+
+/* ===== DARK THEME - DETAIL ================================================
+   The rules, the bar, the status colours, the brand mark, the rings. Colour
+   only; no geometry, no dash phase, no position is touched anywhere here.
+   ======================================================================== */
+
+[data-theme="dark"] {
+
+  /* ---- the table grids --------------------------------------------------
+     Drawn in the primary ink in the light theme, which on this ground would
+     vanish outright and take the three bottom tables with it. The tone is
+     chosen to keep the grid's WEIGHT, not its value: at 0.5px the stroke
+     renders as a half-and-half blend with the surface, which in the light
+     theme lands at 2.75:1 against the plate. This tone lands at 2.59:1 - the
+     same rule, the same presence, neither shouting nor gone. */
+  /* Corrected against the live dark frame while proving the eight items above:
+     his three row grids are not this tone at full strength but at a quarter of
+     it - nodes 813:1355 (bitrix), 813:1229 (calls) and 813:1207 (cost) all read
+     border 0.5px dashed rgba(152,162,179,0.25). At full strength the rule drew
+     twice as bright as his and bled onto a second row of pixels. */
+  --dash-grid:           rgba(152, 162, 179, 0.25);
+
+  /* ---- the progress bar -------------------------------------------------
+     The landing has no bar of its own, so this is derived from its scale, as
+     the plan allows: in the light theme the fill is the primary ink at full
+     strength against a pale track, so on dark it becomes the dark theme's
+     primary ink against the dark track. Same ramp, same alpha at the soft
+     end, same read - a filled portion that cannot be confused with its well. */
+  --dash-bar-from:       rgba(232, 237, 244, 0.46);
+  --dash-bar-to:         #e8edf4;   /* landing --color-svc-title, the primary ink */
+
+  /* ---- status colours ---------------------------------------------------
+     Measured against the surface each one actually sits on. The green sits in
+     a recessed field and reads 5.04, the orange 7.10, the badge discs and the
+     live dot all clear the non-text bar with room - so hue and value stay
+     exactly as the design drew them. Not one of them is touched.
+     The one exception is the red footnote: it sits on the cost card rather
+     than in a well, where it measures 3.57 and fails. Its lightness is lifted
+     ten points to clear 4.52; hue and saturation are untouched, so it is the
+     same red. The landing carries no red at all, so this one is derived. */
+  --dash-danger:         #fd6167;
+
+  /* ---- the brand mark ---------------------------------------------------
+     Шеф's decision: on dark the board takes the landing's own accent, because
+     once the board sits inside that page the host owns the brand. The light
+     theme keeps its own #ff5500 until he orders otherwise. */
+  --dash-brand:          #ff4c00;   /* landing --color-accent-orange */
+
+  /* ---- the rings behind the photographs ---------------------------------
+     A near-white disc behind every avatar haloes hard on this ground. It drops
+     to the raised tone, so the ring still lifts the photo off the card without
+     glaring. Its dark side is already black and its light side already follows
+     the raised tone, so only the disc itself moves. */
+  --dash-ring:           #2f2f2f;
+
+  /* ---- the play button's face -------------------------------------------
+     Measured, not assumed: in the light theme the disc reads at 11.29 against
+     its plate - and it is the PLATE that separates it, not the halo, which
+     measures 11.49 only because the halo is itself the pale plate. On this
+     ground the same #333333 disc measures 1.27 and the button vanishes; only
+     the white arrow was still showing.
+
+     The relationship cannot be reproduced by keeping the disc dark. It is
+     arithmetic, not taste: on a #212121 ground nothing darker can reach even
+     1.31, and a disc light enough to reach 11 would take the white arrow with
+     it. Holding the arrow at a comfortable 4.5 caps the disc at 3.58.
+
+     So the disc inverts, exactly as every other raised surface on this board
+     already does - lighter than its ground rather than darker. The value is
+     Шеф's own dark scale, read live from the Theme collection of FAVORIT-1
+     over the remote MCP (color/ink4, Dark mode). The landing has no tone in
+     this band: its own dark buttons sit at #3A3A3A-#202020 and read by shadow
+     rather than by fill, which is why a landing tone cannot serve here.
+
+     Result: disc 3.05 against the plate, white arrow 5.28 against the disc.
+     The button reads as a button; the arrow is untouched; geometry unmoved. */
+  --dash-disc:           #6b6b73;   /* FAVORIT-1 Theme collection, color/ink4 Dark */
+}
+
+/* ===== DARK THEME - ШЕФ'S HAND EDITS ======================================
+   Шеф edited the dark frame by hand in FAVORIT-1 (frame 813:1114) after the
+   port. His frame is now the truth; every value below was read live out of it,
+   never invented and never rounded to something tidier. The full itemised diff
+   is reference/12-ПРАВКИ-ШЕФА-ТЁМНАЯ.md.
+
+   Colour and shadow only. Nothing here changes a box, a size, a position or a
+   line-height, and nothing here exists outside the dark attribute, so the
+   accepted light theme cannot move.
+   ======================================================================== */
+
+[data-theme="dark"] {
+  /* the dimmer secondary tier Шеф introduced - one step below the body ink */
+  --dash-ink-dim:        #767676;
+  /* his readouts are pure white, brighter than the body ink */
+  --dash-ink-max:        #ffffff;
+  /* the glyphs he blacked out */
+  --dash-glyph-flat:     #000000;
+  /* his recessed light side, replacing the raised tone */
+  --dash-well-lit:       #565656;
+  /* he took the play disc two steps darker than the ported value */
+  --dash-disc:           #474747;
+}
+
+/* ---- A1. the secondary tier drops to the dim tone -----------------------
+   Block headings, the small links beside them, the whole topbar readout, the
+   project line and the operator table's column titles. Body text, values and
+   labels are NOT in this group and keep the body ink. */
+[data-theme="dark"] .tb-service,
+[data-theme="dark"] .tb-clock,
+[data-theme="dark"] .tb-weekday,
+[data-theme="dark"] .tb-date,
+[data-theme="dark"] .tb-range,
+[data-theme="dark"] .tb-project,
+[data-theme="dark"] .tb-client,
+[data-theme="dark"] .tb-linestat,
+[data-theme="dark"] .client__name,
+[data-theme="dark"] .ops-heading,
+[data-theme="dark"] .ops-col,
+[data-theme="dark"] .bx-heading__a,
+[data-theme="dark"] .bx-link,
+[data-theme="dark"] .lc-heading,
+[data-theme="dark"] .lc-link,
+[data-theme="dark"] .cost-heading,
+[data-theme="dark"] .cost-link,
+[data-theme="dark"] .cost-note { color: var(--dash-ink-dim, #767676); }
+
+/* the footnote's red opening stays red - it is listed after the line above so
+   it wins, exactly as it does in Шеф's frame */
+[data-theme="dark"] .cost-note__red { color: var(--dash-danger, #fd6167); }
+
+/* ---- the four readouts are BLACK ---------------------------------------
+   The earlier audit recorded these as pure white; the live file says otherwise.
+   Read again node by node from frame 813:1114: the readout 813:1423 ("120") and
+   the chip text 813:1419 ("69%") are both plain black, and his own render of
+   the isolated field draws them black on the lit well. Same quiet pairing as
+   the blacked-out feed icons - reported, and carried as he drew it.
+
+   The four PERCENT readouts are the one exception, and only because they are
+   unreadable: the chip they sit in is filled by its own inset pair, so the ink
+   meets ground between #212121 and the 87px lit throw #565656. Black on that
+   measures 1.30:1 at the darkest and 2.86:1 at the lightest - it is not a quiet
+   pairing, it is an absent one. They fall back to the board's own dark ink
+   --dash-ink-1 (#e8edf4), which is what the rule was overriding and nothing new:
+   6.5:1 against the lit throw, 13.5:1 against the well floor. Colour only; the
+   chip, its size, its fill and its shadows are untouched, and the light theme
+   never sees this rule. The big value beside it stays black as he drew it. */
+[data-theme="dark"] .kpi-num { color: var(--dash-glyph-flat, #000000); }
+
+/* ---- A6/A7. the small arrows, the Bitrix mark, the calendar and the bell -
+   These are inline glyphs whose colour lives in a fill or stroke attribute, so
+   they are repainted by matching the attribute value inside their own box. */
+[data-theme="dark"] #board .bx-link-arrow  [fill="#162946" i],
+[data-theme="dark"] #board .lc-link-arrow  [fill="#162946" i],
+[data-theme="dark"] #board .cost-link-arrow[fill="#162946" i],
+[data-theme="dark"] #board .bx-link-arrow   [fill="#8A97A5" i],
+[data-theme="dark"] #board .lc-link-arrow   [fill="#8A97A5" i],
+[data-theme="dark"] #board .cost-link-arrow [fill="#8A97A5" i],
+[data-theme="dark"] #board .bx-mark  [fill="#162946" i],
+[data-theme="dark"] #board .bx-mark  [fill="#8A97A5" i],
+[data-theme="dark"] #board .tb-cal-icon [fill="#162946" i],
+[data-theme="dark"] #board .tb-cal-icon [fill="#8A97A5" i] { fill: var(--dash-ink-dim, #767676); }
+
+/* Only the bell's OUTLINE went dim. Its five bodies stayed the bright ink: his
+   dark-frame asset for node 813:1410 carries five fill="#E8EDF4" against five
+   stroke="#767676", and the first port dimmed both, which is why the bell read
+   as a grey silhouette instead of a lit outline. The fill is left to the board's
+   own #162946 -> --dash-ink-1 rule, which is that same #e8edf4 under dark. */
+[data-theme="dark"] #board .tb-bell [stroke="#162946" i] { stroke: var(--dash-ink-dim, #767676); }
+
+/* ---- A8. the glyphs Шеф blacked out ------------------------------------
+   The five Bitrix feed icons, the five download arrows, and the two small cost
+   chip amounts with their dram marks. Reported to Шеф: black on #212121 is a
+   very quiet pairing, and this may have been a bulk operation rather than an
+   intention - but his frame is the truth, so it is carried as it stands. */
+[data-theme="dark"] #board .bx-ic    [fill="#162946" i],
+[data-theme="dark"] #board .bx-ic    [fill="#8A97A5" i],
+[data-theme="dark"] #board .lc-dl-ic [fill="#162946" i],
+[data-theme="dark"] #board .lc-dl-ic [fill="#8A97A5" i] { fill: var(--dash-glyph-flat, #000000); }
+
+[data-theme="dark"] #board .cost-chipval { color: var(--dash-glyph-flat, #000000); }
+
+/* The dram mark next to each small amount is a SIBLING of the chip and of the
+   amount, not a child of either, so the two selectors that used to sit here
+   addressed nothing and the mark kept the light ink. Only the two small marks
+   turn black; the two big ones over the totals stay light, as his frame shows. */
+[data-theme="dark"] #board .cost-dram--sm [fill="#162946" i] { fill: var(--dash-glyph-flat, #000000); }
+
+/* ---- A4/A5. the activity column takes its row's own status colour -------
+   The two talking rows turn their waveform green, the writing row turns its
+   envelope orange. Both were the icon grey. */
+[data-theme="dark"] #board .op-wave  [fill="#8A97A5" i],
+[data-theme="dark"] #board .op-wave  [fill="#162946" i] { fill: var(--dash-status-live,  #00a734); }
+[data-theme="dark"] #board .op-email [fill="#8A97A5" i],
+[data-theme="dark"] #board .op-email [fill="#162946" i],
+[data-theme="dark"] #board .op-email [fill="#446079" i] { fill: var(--dash-status-email, #fe9104); }
+
+/* ---- the numbered badges: white ring, dark digits -----------------------
+   His latest change to the dark frame, and the only thing in it. The ring was
+   painted with the raised tone, which is what the light theme's white maps to
+   on dark; his badge now carries plain white instead, and the digits stopped
+   being white and became the design's dark navy. Both are dark-only; the
+   badge fills and the disc behind the photo are untouched. */
+[data-theme="dark"] #board .op-badge     { box-shadow: inset 0 0 0 2px var(--dash-badge-ring, #ffffff); }
+[data-theme="dark"] #board .op-badge-num { color: var(--dash-badge-num, #162946); }
+
+/* ---- A9. the recessed wells get a lighter, far-thrown inner light -------
+   Only the light side moves: tone, offset and blur are Шеф's own numbers,
+   including the 87px throw. Reported to him as probably a slipped slider; his
+   frame is the truth, so it is carried verbatim. */
+/* The download chip used to be listed here too, but its own six-layer rule
+   further down carries the same light and more, so listing it twice only hid
+   which rule was really winning. */
+[data-theme="dark"] .kpi-chip,
+[data-theme="dark"] .bx-plate,
+[data-theme="dark"] #board .cost-chip {
+  box-shadow:
+    inset  3px  3px 7px   -2px var(--dash-sh-d, #000000),
+    inset -3px 87px 19.1px 0px var(--dash-well-lit, #565656);
+}
+
+/* ---- A9 + A11. the four value fields: same new inner light, the black side
+   moved to 3/3 blur 7, and the 2px ring dropped entirely. */
+[data-theme="dark"] .kpi-value {
+  box-shadow:
+    inset -3px 87px 19.1px 0px var(--dash-well-lit, #565656),
+    inset  3px  3px  7px   0px var(--dash-sh-k, #000000);
+}
+
+/* ---- A10. the four KPI cards simplified --------------------------------
+   Шеф replaced the six-layer neumorphic stack with a symmetric pair and made
+   the card body solid instead of the near-transparent tint. */
+[data-theme="dark"] .kpi-card {
+  background: var(--dash-surface-page, #212121);
+  box-shadow:
+     6.75px  6.75px 15px 0px var(--dash-sh-d, #000000),
+    -6.75px -6.75px 15px 0px var(--dash-sh-l, #2f2f2f);
+}
+
+/* ---- A3. the play button's face ----------------------------------------
+   The disc tone is the token above. Шеф also hung a soft black shadow under
+   each face; the matching inner shadow he added cannot be expressed on an SVG
+   circle from CSS and is reported rather than faked. */
+
+/* ---- A3. the play button's face, done properly --------------------------
+   Шеф's disc carries BOTH an inner and an outer shadow. A vector circle cannot
+   take an inner shadow from CSS, so in the dark theme the disc stops being a
+   drawn circle and becomes the span itself: same box, same 27px, same centre,
+   just painted by the element instead of by the path inside it. The SVG is
+   hidden rather than removed, so the light theme still draws its own circle
+   exactly as accepted. Both shadows are Шеф's own numbers, read live. */
+[data-theme="dark"] #board .lc-play-face > svg { display: none; }
+[data-theme="dark"] #board .lc-play-face {
+  background: var(--dash-disc, #474747);
+  border-radius: 50%;
+  box-shadow:
+    inset 0px 4px 4px rgba(0, 0, 0, 0.25),
+          0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== DARK THEME - ШЕФ'S OPERATORS TABLE ================================
+   He rebuilt the row: the light theme's three recessed wells become ONE raised
+   plate running the full width, and the activity cell re-spaces inside it.
+   Every number below is his, read live from frame 813:1114 and converted from
+   frame coordinates to this build's plate-local ones by subtracting (60, 56).
+   All of it is scoped to the dark attribute, so the accepted light layout -
+   three wells at 534.6 / 1311.6 / 1481.6 - is untouched.
+   ======================================================================== */
+
+/* the status well becomes the whole row, and turns from recessed to raised */
+[data-theme="dark"] #board .op-field--status {
+  left: 535px;
+  width: 1221px;
+  background: var(--dash-surface-card, rgba(255, 255, 255, 0.002));
+  box-shadow:
+     3px  3px  3px 0px rgba(0, 0, 0, 0.51),
+    -3px -3px  8px 0px var(--dash-sh-l, #2f2f2f),
+    11px 11px 20px 0px rgba(0, 0, 0, 0.53),
+    inset 1px 1px 1px 0px var(--dash-sh-l, #2f2f2f);
+}
+
+/* the other two wells are folded into it and no longer exist as their own plates */
+[data-theme="dark"] #board .op-field--act,
+[data-theme="dark"] #board .op-field--next { display: none; }
+
+/* the activity cell re-spaces: both waveforms line up at one left edge, and the
+   readout and its timer icon move in with them */
+[data-theme="dark"] #board .op-wave  { left: 1290px !important; }
+[data-theme="dark"] #board .op-email { left: 1304px !important; }
+[data-theme="dark"] #board .op-time  { left: 1370.61px; }
+[data-theme="dark"] #board .op-timer { left: 1419px; }
+
+/* The column heading moved with its column, and the first port left it behind.
+   Live from the dark frame: text 813:1479 sits at x 899.609375 inside section
+   813:1459, whose own frame origin is x 466 (checked against "Статус" at
+   205.609375, which lands on the build's 671.6088). 466 + 899.609375 =
+   1365.609375 in frame space, 1305.609375 plate-local - exactly 32px left of
+   the light frame's 1337.6088. Addressed by node id and marked important for
+   the same reason as the glyphs above: the value it overrides is inline. */
+[data-theme="dark"] #board .ops-col[data-node="683:2859"] { left: 1305.609375px !important; }
+
+
+/* Шеф also lifted the activity glyphs by one pixel. The three carry different
+   tops inline, so each is addressed by its own node id rather than by order. */
+[data-theme="dark"] #board .op-wave[data-node="683:2936"]  { top: 383px !important; }
+[data-theme="dark"] #board .op-wave[data-node="683:2890"]  { top: 489px !important; }
+[data-theme="dark"] #board .op-email[data-node="683:2910"] { top: 595px !important; }
+
+/* Шеф nudged the whole play button one third of a pixel to the right when he
+   rebuilt the frame: the disc from 1027.6088 to 1028 and the arrow from
+   1038.1088 to 1038.5, in frame coordinates - the same 0.3912px on both, so the
+   glow, the face and the arrow move together as one group. Carried exactly
+   rather than rounded away, because the ruling is pixel-for-pixel. */
+[data-theme="dark"] #board .lc-play-glow  { left: 954.2px; }
+[data-theme="dark"] #board .lc-play-face  { left: 968px; }
+[data-theme="dark"] #board .lc-play-arrow { left: 978.5px; }
+
+/* ---- the footer moved when he rebuilt the frame -------------------------
+   Read live off the dark frame. div.accredition 813:1554 still sits at frame
+   (0, 1112); inside it the positioning frame 813:1557 moved to (794.094970703125,
+   35.5) from the light frame's (779.095, 43.5). Its two texts are group children,
+   so their numbers are in that frame's space: the live line 813:1556 at
+   (75.405029296875, -19.5) and the copyright 813:1559 at (50.904296875, 0.5).
+   In frame space that puts the live line at 869.5 / 1128 and the copyright at
+   844.999267578125 / 1148 - the whole block 46 across and 8 up from the light
+   frame. The build hangs the live line off the zone and the copyright off the
+   wrapper, so the same two points are restated in those two spaces. The empty
+   hotspot 813:1558 keeps its (123, 1.5) and is not restated. */
+[data-theme="dark"] #board .ft-live      { left: 869.5px; top: 16px; }
+[data-theme="dark"] #board .ft-copy-wrap { left: 794.094970703125px; top: 35.5px; }
+[data-theme="dark"] #board .ft-copy      { left: 50.904296875px; }
+
+/* ===== DARK THEME - ШЕФ'S DEPTH ==========================================
+   The colour port carried his tones but not his DEPTH: several effect stacks
+   in his frame differ from the light theme's, and one was deleted outright.
+   Every stack below was read layer by layer from frame 813:1114 - offset,
+   blur, spread, colour, alpha - and written in CSS order, which is the reverse
+   of Figma's array order (established earlier on the light theme and re-checked
+   here against the eleven stacks that already matched).
+   Dark attribute only; the light theme's own depth is untouched.
+   ======================================================================== */
+
+/* ---- the operators block loses its card shadow entirely -----------------
+   In the light frame the block sits on a 1354x386 shadow plate with six
+   layers. In Шеф's dark frame that node does not exist at all - he deleted it,
+   so the block reads flat against the plate and only its rows carry depth. */
+[data-theme="dark"] #board .ops-card { box-shadow: none; }
+
+/* ---- the recent-calls block: same six layers as its neighbours, but its
+   raised layer has no spread where theirs have 4 ------------------------- */
+[data-theme="dark"] #board .lc-card {
+  box-shadow:
+     1px  1px  3px 0px var(--dash-sh-d, #000000),
+    -4px  0px  3px 0px var(--dash-sh-l-60, rgba(47, 47, 47, 0.6)),
+     0px -4px  3px 0px var(--dash-sh-l-60, rgba(47, 47, 47, 0.6)),
+    -2px -2px 14px 0px var(--dash-sh-l, #2f2f2f),
+     3px  3px  8px 0px var(--dash-sh-d, #000000),
+     3px  3px 15px 0px var(--dash-sh-d, #000000);
+}
+
+/* ---- the operator rows: his spreads, which the first port flattened ----- */
+[data-theme="dark"] #board .op-field--status {
+  box-shadow:
+    inset 1px 1px 1px 0px var(--dash-sh-l, #2f2f2f),
+    11px 11px 20px -5px rgba(0, 0, 0, 0.53),
+    -3px -3px  8px  4px var(--dash-sh-l, #2f2f2f),
+     3px  3px  3px  0px rgba(0, 0, 0, 0.51);
+}
+
+/* ---- the download buttons: raised OUTSIDE and lit INSIDE ----------------
+   Five 30x30 chips, fill rgba(255,255,255,0), read live off nodes 813:1235 /
+   1236 / 1237 (and their two twins). Six layers, not four: the raised trio the
+   earlier port carried, PLUS the three inner layers it dropped - and the third
+   of those is the same far-thrown #565656 light that fills every other recessed
+   field in his dark frame. Without it the chip stayed as dark as the card and
+   his lit square was missing. Inner layers come first because CSS paints a
+   box-shadow list front to back, so the flood has to lead to sit on top. */
+[data-theme="dark"] #board .lc-dl {
+  background: transparent;
+  box-shadow:
+    inset  3px  3px  7px   0px var(--dash-sh-k, #000000),
+    inset  1px  1px  1px   0px var(--dash-sh-l, #2f2f2f),
+    inset -3px 87px 19.1px 0px var(--dash-well-lit, #565656),
+     11px  11px 20px  -5px rgba(0, 0, 0, 0.53),
+     -3px  -3px  8px   4px var(--dash-sh-l, #2f2f2f),
+      3px   3px  3px   0px rgba(0, 0, 0, 0.51);
+}
+
+/* ---- the KPI value fields: his layer order and his -2 spread ------------ */
+[data-theme="dark"] #board .kpi-value {
+  box-shadow:
+    inset  3px  3px  7px  -2px var(--dash-sh-k, #000000),
+    inset -3px 87px 19.1px 0px var(--dash-well-lit, #565656);
+}
+
+/* ---- the client avatar gains the outer edge his frame gives it ---------- */
+[data-theme="dark"] #board .client__avatar-inset {
+  box-shadow:
+    1px 1px 2px 0px var(--dash-sh-l, #2f2f2f),
+    inset 1px 1px 3px 0px var(--dash-sh-d, #000000);
+}
+
+/* ---- the play arrow carries all four of his layers ----------------------
+   His frame hangs four effects on the 9x12 arrow: two drops and two inner. The
+   earlier port could only do the drops, because no CSS box-shadow reaches the
+   inside of a vector path. An SVG filter does, so the whole stack is now the
+   one Figma itself exports for node 813:1305, kept primitive for primitive in
+   the document head. Values in the filter are user-space, and the arrow's box
+   is 1:1 with CSS pixels, so his dy 4 / blur 2 land exactly. */
+[data-theme="dark"] #board .lc-play-arrow { filter: url(#lc-play-ddii); }
+
+/* ===== DARK THEME - ШЕФ'S CARD BODIES ====================================
+   Diagnosed by measuring the rendered page, not by reading CSS: the six shadow
+   layers WERE applied and computed correctly, but the board still looked flat.
+   The reason is a real difference between the two renderers. In Figma a drop
+   shadow is painted behind the layer and shows THROUGH a 0.2%-opaque card, so
+   his light layer (#2f2f2f, spread 4, blur 14) floods the whole card body and
+   the block reads as a raised lighter panel. In CSS an outer box-shadow is
+   clipped to outside the border box, so the body stayed the plate colour and
+   only a faint rim survived - exactly the "flat" Шеф saw.
+
+   The fix paints the body with the tone his own light layer produces there.
+   The colour is his (#2f2f2f, --dash-sh-l); nothing is invented, and the six
+   shadow layers stay exactly as read from his frame.
+   ======================================================================== */
+[data-theme="dark"] #board .bx-card,
+[data-theme="dark"] #board .lc-card,
+[data-theme="dark"] #board .cost-card { background: var(--dash-card-flood, #222222); }
+
+/* His list rows carry no fill at all - node 813:1355 is a dashed rule and
+   nothing else - so they show the body tone straight through. Painted with the
+   same value rather than left transparent so the row keeps its own paint layer
+   under the dashed rule, which is how the rest of the block is built. */
+[data-theme="dark"] #board .bx-row,
+[data-theme="dark"] #board .lc-row,
+[data-theme="dark"] #board .cost-row { background: var(--dash-card-flood, #222222); }
+
+/* The same renderer difference applies to every other carrier whose fill is
+   #ffffff at 0.2% AND whose stack contains a #2f2f2f drop layer with spread,
+   which in Figma floods the whole shape. Verified one by one against his frame:
+     a.logout-button:shadow  -2,-2 r14 sp4   -> floods
+     client button shadow    -3,-3 r8  sp4   -> floods
+     the two topbar wells    -3,-3 r8  sp4   -> floods
+     the operator row plates -3,-3 r8  sp4   -> floods
+     the download chips      -3,-3 r8  sp4   -> floods
+   The active menu item is deliberately NOT in this list: its four layers are
+   all inner, so nothing floods it and it stays a recessed dark pill, exactly
+   as his sidebar shows. */
+[data-theme="dark"] #board .op-field--status { background: var(--dash-card-flood, #222222); }
+/* The download chip is NOT in this list: its own rule above paints it with the
+   full six-layer stack and leaves the body transparent, exactly as his node is,
+   so the block body shows through at its corners. */
+
+/* Checked against his render and NOT flooded, though their stacks look alike:
+   the support button, the client button and the two topbar wells all read dark
+   in his frame. Their bodies stay as they were. */
+
+
+/* =============================================================================
+   LIVE DEMO ENGINE — the styles, and only the styles, that the engine needs.
+
+   Nothing above this line is touched. Every rule below either paints something
+   the frozen design does not have at all (the lamp in the well, the notice, the
+   living waveform) or re-points a colour the engine now owns (the operator
+   status colour, which the design pinned per row in the markup).
+
+   HOUSE RULE, restated so it stays visible: an element that is active, pressed
+   or expanded carries
+       box-shadow: var(--in), inset 0 0 0 1.5px
+                   color-mix(in oklab, var(--accent) 45%, transparent);
+   and keeps that outline on hover. This build has one such element, the active
+   menu item, and it is not touched here; the engine adds no active, pressed or
+   expanded state of its own, so the rule stands untouched.
+   ========================================================================== */
+
+/* Registered so the two lamp animations can interpolate them as numbers, and so
+   the resolved intensity - a number, not a token stream - reaches ::after.
+   --cc-b breathes, --cc-f flares; they are separate properties on purpose, so
+   the two animations can run at once without either resetting the other. */
+@property --cc-b { syntax: '<number>'; inherits: false; initial-value: 1 }
+@property --cc-f { syntax: '<number>'; inherits: false; initial-value: 1 }
+@property --cc-i { syntax: '<number>'; inherits: true;  initial-value: 0 }
+
+/* ---- 1. real glass in the well -----------------------------------------
+   Variant A, "cast glass over a lamp", glass at full thickness. The CSS-gradient
+   lamp that stood here before is gone entirely: a gradient cannot bevel, and a
+   box-shadow cannot light a surface from a point. The well is now an SVG the
+   engine builds into each of the six elements - four KPI value fields and the
+   two price rows in СТОИМОСТЬ ПРОЕКТА, and nothing else. Bitrix, the calls
+   table, the operator plates and the sidebar carry no glass.
+
+   The stack, bottom to top, is built in demo-engine.js §7:
+     оправа   - a dark wall with a thin cant along its edge
+     шахта    - the near-black shaft inside it
+     лампа    - a radial gradient deep in the shaft, white at its centre,
+                dying out towards the top
+     стекло   - a half-transparent plate, near-white at the top falling to a
+                blue cast at the bottom
+     объём    - feGaussianBlur on SourceAlpha, then feSpecularLighting with a
+                fePointLight up and to the left, added back onto the graphic
+     блик     - a thin white highlight along the glass edge
+   and the digit, a later sibling in the document, paints over all of it.
+
+   --cc-lamp is still the one dial, and it now drives the lamp group's opacity,
+   so the breathing and the flare reach the light itself and not a tint over it.
+   Everything about the behaviour is unchanged: 6s breath, 0.7s flare, a phase
+   of its own per window, both off under prefers-reduced-motion. */
+:root {
+  --cc-lamp: 0.88;
+}
+
+[data-theme="dark"] #board [data-cc="lamp"] {
+  --cc-i: calc(var(--cc-lamp) * var(--cc-b) * var(--cc-f));
+  animation: cc-breathe 6s ease-in-out var(--cc-ph, 0s) infinite;
+}
+
+#board [data-cc="lamp"] > svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* the only part of the glass that moves: the lamp behind it */
+#board [data-cc="lamp"] .cc-lamp-core { opacity: var(--cc-i); }
+
+/* ---- the same glass, turned over, on the three small plates ---------------
+   The feed's icon plate, the play disc and the download square - and nothing
+   else. The row around them, its background, its height, its hairline, the
+   text, the time and the waveforms are all untouched.
+
+   The glass is each plate's first child, so it paints under the glyph, the
+   download arrow and the play arrow, every one of which is a later sibling of
+   the plate rather than a child of it.
+
+   Dark theme only: in the light theme the download glyph is dark and would
+   vanish on a #0A0B0E plate, so the accepted light board keeps its own look. */
+#board .cc-plate { display: none; }
+
+[data-theme="dark"] #board .cc-plate {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* the dark theme hides the play disc's own circle through `.lc-play-face > svg`;
+   this beats that one rule on specificity and only for the glass */
+[data-theme="dark"] #board .lc-play-face > svg.cc-plate { display: block; }
+
+
+/* the flare: a step up on the frame the number changes, settling over 0.7s.
+   Item 0 of the list is the same breathing animation with the same name and
+   timing, so adding the class does not restart it. */
+[data-theme="dark"] #board [data-cc="lamp"].cc-flare {
+  animation:
+    cc-breathe 6s   ease-in-out var(--cc-ph, 0s) infinite,
+    cc-flare   0.7s cubic-bezier(.16, .8, .3, 1) 0s 1;
+}
+
+@keyframes cc-breathe { 0%, 100% { --cc-b: 0.965 } 50% { --cc-b: 1.035 } }
+@keyframes cc-flare   { 0% { --cc-f: 1.9 } 100% { --cc-f: 1 } }
+
+/* ---- 2. the operator row takes its status colour ------------------------
+   The design pinned green and orange per row in the markup, through
+   .op-dot--live / .op-status--email and friends. Those rules stay; the engine
+   now owns the value, and hands it over in --cc-c (ink, dot, timer, glyph) and
+   --cc-cb (the badge, which the design paints one step brighter than the ink -
+   #10D096 against #00A734, #FFA80B against #FE9104 - and that relationship is
+   kept for all seven statuses).
+
+   Every fallback below is the value the FROZEN FRAME would paint on its own -
+   the design's green on the two talking rows, its orange on the writing row,
+   its ink on the readout, its #39D05F on the stopwatch, its icon grey on the
+   waveform. So with the engine not running, or before its first frame, the
+   accepted board is what paints; the engine only ever replaces a colour with
+   another colour, never with a wrong one. */
+#board .ops-zone [data-cc="dot"].op-dot--live       { background: var(--cc-c,  #00a734); }
+#board .ops-zone [data-cc="dot"].op-dot--email      { background: var(--cc-c,  #fe9104); }
+#board .ops-zone [data-cc="badge"].op-badge--live   { background: var(--cc-cb, #10d096); }
+#board .ops-zone [data-cc="badge"].op-badge--email  { background: var(--cc-cb, #ffa80b); }
+#board .ops-zone [data-cc="status"].op-status--live  { color: var(--cc-c, #00a734); }
+#board .ops-zone [data-cc="status"].op-status--email { color: var(--cc-c, #fe9104); }
+
+#board .ops-zone [data-cc="time"] { color: var(--cc-c, var(--dash-ink-1, #162946)); }
+#board .ops-zone [data-cc="act"]  { color: var(--cc-c, var(--dash-icon,  #8a97a5)); }
+
+#board .ops-zone [data-cc="timer"] svg [fill] { fill: var(--cc-c, var(--dash-dot-live, #39d05f)); }
+#board .ops-zone [data-cc="act"]   svg [fill] { fill: var(--cc-c, var(--dash-icon,     #8a97a5)); }
+
+/* ---- 3. the waveform is alive, and only during a call -------------------
+   Шеф's own twelve bars, scaled about their own centres. Nothing is redrawn
+   and nothing moves horizontally: each bar keeps its x, its width and its cap.
+   The five-step delay and the three-step duration ladder are coprime, so the
+   twelve bars never line up into one pulsing block. */
+#board [data-cc="act"][data-cc-mode="wave"] svg > path {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: cc-wave 0.9s ease-in-out infinite;
+}
+@keyframes cc-wave { 0%, 100% { transform: scaleY(0.40) } 50% { transform: scaleY(1.30) } }
+
+#board [data-cc="act"][data-cc-mode="wave"] svg > path:nth-child(5n+1) { animation-delay: -0.00s }
+#board [data-cc="act"][data-cc-mode="wave"] svg > path:nth-child(5n+2) { animation-delay: -0.31s }
+#board [data-cc="act"][data-cc-mode="wave"] svg > path:nth-child(5n+3) { animation-delay: -0.62s }
+#board [data-cc="act"][data-cc-mode="wave"] svg > path:nth-child(5n+4) { animation-delay: -0.17s }
+#board [data-cc="act"][data-cc-mode="wave"] svg > path:nth-child(5n+5) { animation-delay: -0.48s }
+#board [data-cc="act"][data-cc-mode="wave"] svg > path:nth-child(3n+1) { animation-duration: 0.86s }
+#board [data-cc="act"][data-cc-mode="wave"] svg > path:nth-child(3n+2) { animation-duration: 1.04s }
+#board [data-cc="act"][data-cc-mode="wave"] svg > path:nth-child(3n+3) { animation-duration: 0.95s }
+
+/* the waveform keeps its own 60x19.69 canvas whatever slot it lands in: rows
+   one and two are exactly that size already, so this is a no-op there, while
+   row three - whose slot the design cut for the narrower email glyph - draws
+   the wave at true size instead of squashing it into 33.7px. */
+#board [data-cc="act"][data-cc-mode="wave"] > svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 60px;
+  height: 19.6892px;
+  transform: translate(-50%, -50%);
+}
+
+/* ---- 4. every other status shows a glyph in that status's colour --------
+   No frame, no plate: the glyph is centred on the activity slot's own centre
+   and overflows it, so it needs no coordinates of its own and picks up both
+   themes' positions - including the ones Шеф moved in the dark frame - for
+   free. Equal padding on all four sides follows from the centring. */
+#board [data-cc="act"][data-cc-mode="icon"] > svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translate(-50%, -50%);
+}
+
+/* ---- 5. the Bitrix feed icons ------------------------------------------
+   A 22x22 slot centred on the recessed plate the design draws under it - four
+   pixels of air on every side of the 30x30 plate. This is the one place the
+   frozen design is deliberately changed: the ported glyphs sat at 16px and off
+   centre, and at that size nine event types cannot be told apart across a room.
+
+   Colour comes from the engine in --cc-ic, one hue per event type, so the feed
+   is read by colour before it is read by word. The two fallbacks are what the
+   frozen frame paints on its own if the engine never runs: the primary ink in
+   light, and the flat black Шеф painted these five glyphs in his dark frame. */
+#board [data-cc="bx-ic"]       { color: var(--cc-ic, var(--dash-ink-1, #162946)); }
+#board [data-cc="bx-ic"] > svg { display: block; width: 100%; height: 100%; }
+[data-theme="dark"] #board [data-cc="bx-ic"] { color: var(--cc-ic, var(--dash-glyph-flat, #000000)); }
+
+/* ---- 6. a new row arrives ----------------------------------------------
+   The row is written first and faded second, so there is no frame in which it
+   is on screen without its content. */
+@keyframes cc-in { from { opacity: 0.2 } to { opacity: 1 } }
+#board .cc-in { animation: cc-in 0.34s ease-out both; }
+
+/* ---- 7. a number changed ------------------------------------------------
+   A highlight, not a movement: the value re-emerges instead of sliding. */
+@keyframes cc-bump { from { opacity: 0.3 } to { opacity: 1 } }
+#board .cc-bump { animation: cc-bump 0.45s ease-out both; }
+
+/* ---- 8. the notice ------------------------------------------------------
+   The four links and the record controls answer with one line of text. It is
+   built from the design's own card recipe - same surface, same six-layer
+   convex shadow, same ink - so it reads as part of the board and not as a
+   browser dialog. */
+#board .cc-notice {
+  position: absolute;
+  z-index: 60;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  color: var(--dash-ink-1, #162946);
+  background: var(--dash-surface-page, #f1f2f6);
+  box-shadow:
+     1px  1px  3px 0px var(--dash-sh-d, #c4ceda),
+    -2px -2px 14px 4px var(--dash-sh-l, #ffffff),
+     3px  3px  8px 0px var(--dash-sh-d-deep, #b0c4db),
+     3px  3px 15px 0px var(--dash-sh-d, #c4ceda);
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
+}
+#board .cc-notice.cc-on { opacity: 1; }
+
+/* the three zone wrappers switch pointer-events off for everything and let
+   their text opt back in; the controls the notice hangs on opt back in here. */
+#board [data-cc="notice"] { pointer-events: auto; cursor: pointer; }
+
+/* ---- 9. reduced motion, and hardware that cannot carry it ---------------
+   A freeze-frame: the engine stops mid-cycle and every animation here stops
+   with it. The light stays on, steady, at its resting brightness. */
+@media (prefers-reduced-motion: reduce) {
+  #board [data-cc="lamp"],
+  #board [data-cc="lamp"].cc-flare,
+  #board [data-cc-mode="wave"] svg > path,
+  #board .cc-in,
+  #board .cc-bump { animation: none !important; }
+  #board .cc-notice { transition: none; }
+}
+
+[data-cc-still] #board [data-cc="lamp"],
+[data-cc-still] #board [data-cc="lamp"].cc-flare,
+[data-cc-still] #board [data-cc-mode="wave"] svg > path,
+[data-cc-still] #board .cc-in,
+[data-cc-still] #board .cc-bump { animation: none !important; }

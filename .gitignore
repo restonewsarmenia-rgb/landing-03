@@ -1,0 +1,8 @@
+# .mos-web/ carries this task's gate artifacts: the two gate documents
+# (G14-performance.md, G16-final-qa.md), the discovery artifact, MASTER-STATE.md,
+# and the acceptance screenshots those documents cite by name. Those ship.
+#
+# gates/data/ is the sandbox: the measurement scripts and the raw JSON they
+# produced. It reproduces the numbers already quoted in the gate documents and
+# was never meant to live in the repo — ignored rather than committed.
+.mos-web/gates/data/

@@ -1,0 +1,75 @@
+/* board-block.css - the live board, framed at the bottom of the page.
+
+   This file is additive. It edits no existing rule and redefines no existing token:
+   .page keeps its 1440 canvas and its 3096px height, .form-card and .footer-card keep
+   their own left/top/width/height. The two boxes that sit below the new block are only
+   offset by the height the block adds, so nothing above it can move by a pixel.
+
+   The board is a finished 1920 x 1200 design that scales as one unit and never
+   reflows, so the block holds that ratio exactly and lets the frame do its own
+   scaling. It is the one place on this page that is wider than the 1440 canvas.
+
+   Everything here is gated behind .has-board, which the script at the end of
+   index.html sets. Without scripting this block adds nothing to the page: no frame,
+   no box, not even a request for this file, and the footer stays at its own 2672.
+   (The three "О компании" photos still arrive in their modern formats - that change
+   is separate and does not depend on scripting.) The board is a live, JS-driven demo,
+   so a scriptless visitor would otherwise download 1.16 MB to be shown a frozen,
+   wrong-theme, clipped slab. Nothing is better than that. */
+
+:root {
+  /* The bleed is as wide as the viewport, but never narrower than the canvas the
+     page already scrolls to, so no NEW horizontal overflow can appear below 1440
+     (the page itself already scrolls to 1440 at narrower widths). The script
+     overwrites this with the measured clientWidth; the fallback is the canvas. */
+  --bleed-w: 1440px;
+
+  /* The board's document reserves a scrollbar gutter of its own (scrollbar-gutter:
+     stable, its cure for scale oscillation). Measured from the loaded frame, never
+     assumed: it is 0 on overlay-scrollbar platforms and ~15px on classic ones. */
+  --board-gutter: 0px;
+
+  /* 1920 : 1200 = 0.625, written once. The block's height and the offset the footer
+     takes below it both read THIS value - two derivations of one number would be
+     free to drift apart. */
+  --board-h: calc(var(--bleed-w) * 0.625);
+
+  /* The 144px the form card and the footer already had between them, split evenly
+     above and below the new block, so the page's own vertical rhythm is kept. */
+  --board-gap: 72px;
+}
+
+.board-bleed { display: none; }
+
+.has-board .board-bleed {
+  display: block;
+  position: absolute;
+  top: calc(2528px + var(--board-gap));          /* .form-card's own bottom edge, plus the gap */
+  left: calc(50% - var(--bleed-w) / 2);          /* centred on the viewport, not on the canvas */
+  width: var(--bleed-w);
+  height: var(--board-h);
+  overflow: hidden;                              /* clips the frame's reserved gutter */
+  background: var(--color-bg);                   /* the page's own ground until the frame arrives */
+}
+
+.board-bleed__frame {
+  display: block;
+  width: calc(100% + var(--board-gutter));       /* the gutter is pushed under the clip */
+  height: 100%;
+  border: 0;
+}
+
+/* The two boxes below the block move down by exactly the block's height. Their own
+   rules are untouched: the footer keeps left 115 / width 1213 / height 322 and only
+   its top is restated, and the canvas keeps height 3096 and grows a margin instead.
+
+   `top` rather than a transform, for the plain reason that it needs no extra layer -
+   NOT because it renders differently. Measured both ways, twice, by two people: the
+   footer loses 10-22 anti-aliased pixels (delta <= 4 of 255, on its rounded corners
+   and social buttons) at 1920 and 2560 either way, and 0 at 1280 and 1440. The cause
+   is the element being rasterised at a different absolute Y; the pre-task page with
+   nothing but a `top` shift reproduces the same counts, and so does the shipped page
+   with the frame never built. Nothing about this block causes it, and no way of
+   moving the footer down avoids it. */
+.has-board .footer-card { top: calc(2672px + var(--board-h)); }
+.has-board .page { margin-bottom: var(--board-h); }
