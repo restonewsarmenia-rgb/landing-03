@@ -14,10 +14,32 @@
    TIME. The scenario below is written in REAL operator seconds - a call really
    is two and a half minutes of an operator's day. The board replays it at demo
    speed: every operator's queue is normalised so that all three finish their
-   companies at the same instant, at the end of a 3.5-minute loop. The status
+   companies at the same instant, at the end of a 3.5-minute ring. The status
    timer therefore counts the operator's own real seconds (a call runs 00:00 ->
    02:30, which is where the design's 02:31 comes from) off a wall clock that
-   never drifts: it is driven by performance.now(), not by a frame counter.
+   never drifts: it is driven by performance.now(), not by a frame counter. The
+   clock is accumulated frame by frame, with a quarter-second ceiling on any one
+   step, so that a backgrounded tab resumes where it stopped instead of
+   fast-forwarding an hour of work in a single frame.
+
+   THE RING IS NOT THE PROJECT. The 3.5-minute ring decides only WHICH company
+   each operator is on. The four counters and the money hang off it but are not
+   reset by it: they climb, company by company, from where the board opens
+   toward the plan, and the only thing that ever returns them to zero is the
+   period closing - which the board announces in the feed, in the operator rows
+   and in the date range before it happens. Nothing on this board moves
+   backwards without saying so first.
+
+   THE EVENT LOG runs on the same compressed clock as the operator timers, not
+   on the wall clock in the header: a board that replays a month of work in half
+   an hour cannot stamp its event log in real minutes without printing the same
+   minute on all five rows. The header clock is the visitor's own time; the feed
+   and the recordings carry the board's. The cost of that, stated plainly: the
+   log runs AHEAD of the header clock by about one minute for every minute
+   watched - three minutes into a look, thirty-nine after forty. The whole of
+   the trade is one constant: WORK_RATE 2 -> 1 with PACE_S and CALL_PACE_S
+   raised to 62 buys stamps that match the header clock exactly and costs half
+   the life in the two bottom panels, a line a minute instead of two.
    ========================================================================== */
 
 (function () {
@@ -52,15 +74,83 @@
   var PAID   = 300000;
   var TARIFF = 'Старт';                                    // no node in the frame
 
-  var START = { comp: 120, lpr: 80, inter: 44, offer: 18, used: 206000 };
-  var END   = { comp: 140, lpr: 93, inter: 51, offer: 21, used: 240000 };
+  /* Where the board stands when the visitor arrives: three weeks into a thirty
+     day period, 120 of the 175 companies processed and 206 000 of the 300 000
+     spent. Both are 69 %, which is the design's own accepted frame. From here
+     the counters only ever climb. */
+  var START = { comp: 120, lpr: 34, inter: 8, offer: 3, used: 206000 };
 
-  /* Twenty companies, so every closure carries the same slice of the budget and
-     the used sum lands on 240 000 exactly, never by a correction at the end. */
-  var COST_PER_COMPANY = (END.used - START.used) / 20;     // 1700
+  /* ------------------------------------------------------------ the funnel
+     What a cold outbound project in Armenian B2B really produces, stage by
+     stage, each rate a share of the stage above it - so the four counters can
+     never break the rule that each is a subset of the one before.
+
+       lpr    ЛПР / обработано        ~29 %   most numbers are silent or die at
+                                              the secretary; not three calls in
+                                              ten reach the person who decides
+       inter  интерес / ЛПР           ~23 %   barely one decision maker in four
+                                              who takes a cold call will hear
+                                              the offer out
+       offer  КП / интерес            ~40 %   the rest are callbacks, not yet
+                                              a despatched proposal
+
+     End to end that is 175 companies -> ~51 decision makers -> ~12 interested
+     -> ~5 proposals: three in a hundred of a cold list end in a КП. An
+     independent audit of the first port of these rates called 28 % interest
+     "still the flattering one" and put the honest band at 15-22 %; the base
+     came down from 0.280 to 0.230 on that reading.
+
+     The board opened on two thirds and one half - 80 of 120 companies reaching
+     the decision maker and 44 of those 80 interested. No cold outbound project
+     in Armenian B2B produces that, and it is the first thing a client who has
+     run one reads off the screen.
+
+     Every rate carries its own slow swing on its own period, so the board is
+     never twice in the same place and the percentages live instead of standing
+     still - and because the counters accumulate, what the client reads is a
+     running total that drifts by a point or two, not a flicker. */
+  var RATE = {
+    lpr:   { base: 0.290, amp: 0.040, w: 0.70, ph: 0.00 },   /* 25 .. 33 % */
+    inter: { base: 0.230, amp: 0.035, w: 0.43, ph: 1.10 },   /* 20 .. 27 % */
+    offer: { base: 0.400, amp: 0.090, w: 0.31, ph: 2.20 }    /* 31 .. 49 % */
+  };
+
+  function rateAt(r, loop) { return r.base + r.amp * Math.sin(loop * r.w + r.ph); }
+
+  /* Of the companies that never reach the decision maker, roughly half are
+     stopped by a secretary and half never answer at all; the split drifts too. */
+  function secShare(loop) { return 0.50 + 0.06 * Math.sin(loop * 0.53 + 0.30); }
+
+  /* A 32-bit LCG. The loop index is the only seed, so the same ring always
+     deals the same twenty fates - the board is reproducible, an audit can
+     replay it, and nothing here depends on Math.random. */
+  function rng(seed) {
+    var s = (seed * 1664525 + 1013904223) >>> 0;
+    return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  }
+
+  /* ------------------------------------------------------------- the money
+     A company costs what it costs the operators: a number that rings out
+     unanswered five times is cheap, a secretary wall is expensive, a real
+     conversation sits in between. So the price of a company is its own length
+     in operator seconds against the average one, which is what lets the budget
+     run ahead of the plan in one ring and behind it in the next instead of the
+     two moving as one bar in two places.
+
+     COST_LEVEL is the project's own rate against the nominal 300 000 / 175, and
+     it is below one: the plan is met with budget still on the table, which is
+     the result the client is buying. The governor at the end is the only hard
+     rule - the used sum can never pass the paid sum and can never fall. */
+  var NOMINAL    = PAID / PLAN;                            // 1714.29 драм
+  var COST_LEVEL = 0.93;
+  var COST_SWING = 0.22;
+  var COST_PHASE = 2.30;   /* chosen so the first rings run over the rate and the
+                              next ones under it: the money is AHEAD of the plan
+                              early and BEHIND it later, which is the thing that
+                              cannot happen while both are one number twice */
 
   /* The design's own bar is 205px wide at 69%. Anchoring the scale there keeps
-     the accepted frame pixel-exact at the start of every loop, instead of
+     the accepted frame pixel-exact at the moment the board opens, instead of
      re-deriving a width that would move the bar before anything has happened. */
   var BAR_PX_AT_69 = 205;
 
@@ -84,37 +174,95 @@
   };
 
   /* ------------------------------------------------------ the twenty companies
-     Fates are fixed in advance; nothing here is generated. Within each operator
-     the fates alternate, so a row never shows the same outcome twice running.
+     The names and who calls them are fixed. What happens on the call is not:
+     a fate is dealt to every company at the start of each ring, from the rates
+     above, by the seeded generator - so the same operator meets the same
+     company again on a different day and it goes differently, which is what a
+     list of cold numbers actually does. Nothing is random at run time: the ring
+     index is the seed, and a given ring always deals the same twenty fates.
 
-     op 1 — six interested: three ask for an offer, three give a soft yes.
-     op 2 — seven no-contacts: four are stopped at the secretary, three are
-            never picked up at all and get no secretary phase.
-     op 3 — six refusals plus one company that asks to be called back.        */
+     Five fates, and only these five:
+       silent  никто не ответил      - five dials, no one picks up
+       sec     секретарь не соединил - five dials, a wall every time
+       refuse  ЛПР отказал           - the conversation happens and ends in no
+       soft    просил перезвонить    - interest, but not yet a proposal
+       offer   КП отправлено         - interest and a despatched proposal      */
   var SCEN = [
-    { op: 1, name: 'Арарат Мебель',   fate: 'offer'  },
-    { op: 1, name: 'Ани Строй',       fate: 'soft'   },
-    { op: 1, name: 'Гарни Фуд',       fate: 'offer'  },
-    { op: 1, name: 'Ереван Текстиль', fate: 'soft'   },
-    { op: 1, name: 'Масис Агро',      fate: 'offer'  },
-    { op: 1, name: 'Вардаван Пласт',  fate: 'soft'   },
+    { op: 1, name: 'Арарат Мебель'   },
+    { op: 1, name: 'Ани Строй'       },
+    { op: 1, name: 'Гарни Фуд'       },
+    { op: 1, name: 'Ереван Текстиль' },
+    { op: 1, name: 'Масис Агро'      },
+    { op: 1, name: 'Вардаван Пласт'  },
 
-    { op: 2, name: 'Ширак Металл',    fate: 'sec'    },
-    { op: 2, name: 'Зангу Транс',     fate: 'silent' },
-    { op: 2, name: 'Аштарак Бетон',   fate: 'sec'    },
-    { op: 2, name: 'Лори Вуд',        fate: 'silent' },
-    { op: 2, name: 'Мегри Фрукт',     fate: 'sec'    },
-    { op: 2, name: 'Вернисаж Декор',  fate: 'silent' },
-    { op: 2, name: 'Апаран Молоко',   fate: 'sec'    },
+    { op: 2, name: 'Ширак Металл'    },
+    { op: 2, name: 'Зангу Транс'     },
+    { op: 2, name: 'Аштарак Бетон'   },
+    { op: 2, name: 'Лори Вуд'        },
+    { op: 2, name: 'Мегри Фрукт'     },
+    { op: 2, name: 'Вернисаж Декор'  },
+    { op: 2, name: 'Апаран Молоко'   },
 
-    { op: 3, name: 'Норк Медикал',    fate: 'refuse' },
-    { op: 3, name: 'Каскад Отель',    fate: 'refuse' },
-    { op: 3, name: 'Севан Логистик',  fate: 'soft'   },
-    { op: 3, name: 'Тигран Авто',     fate: 'refuse' },
-    { op: 3, name: 'Кентрон Кафе',    fate: 'refuse' },
-    { op: 3, name: 'Багратуни Дент',  fate: 'refuse' },
-    { op: 3, name: 'Раздан Пекарня',  fate: 'refuse' }
+    { op: 3, name: 'Норк Медикал'    },
+    { op: 3, name: 'Каскад Отель'    },
+    { op: 3, name: 'Севан Логистик'  },
+    { op: 3, name: 'Тигран Авто'     },
+    { op: 3, name: 'Кентрон Кафе'    },
+    { op: 3, name: 'Багратуни Дент'  },
+    { op: 3, name: 'Раздан Пекарня'  }
   ];
+
+  /* Fates are dealt by QUOTA, not by a coin toss per company. Twenty companies
+     is far too small a sample for a coin: tossing it gave rings where three
+     quarters of the interested leads got a proposal and rings where none did,
+     and a client reading a percentage does not care that it was honest chance -
+     he reads it as the number the project produces. So a hundred companies are
+     dealt at once, in the exact proportions the rates ask for, shuffled, and
+     handed to the rings twenty at a time. Each ring's own mix still varies,
+     because the shuffle does not deal the hundred evenly into five - but the
+     hundred is exact, and what the client watches drift is the rates
+     themselves, not the sampling error underneath them. */
+  var BAG_N = 100;
+  var bag = [];
+
+  function quotaBag(n, loop) {
+    var nLpr   = Math.round(n * rateAt(RATE.lpr, loop));
+    var nInter = Math.round(nLpr * rateAt(RATE.inter, loop));
+    var nOffer = Math.round(nInter * rateAt(RATE.offer, loop));
+    var nSec   = Math.round((n - nLpr) * secShare(loop));
+    return {
+      offer:  nOffer,
+      soft:   nInter - nOffer,
+      refuse: nLpr - nInter,
+      sec:    nSec,
+      silent: n - nLpr - nSec
+    };
+  }
+
+  /* Not a shuffle - a spread. A plain shuffle of a hundred puts four silent
+     numbers back to back and then three conversations back to back, and the
+     recordings table goes eighty seconds without a line and then takes three
+     at once. Each fate is laid down at even spacing across the hundred instead,
+     with a small deterministic offset per fate so the five never fall into a
+     repeating pattern: the mix of any twenty is close to the mix of the
+     hundred, and no row ever shows the same outcome three times running. */
+  function spread(groups, r) {
+    var slots = [], k, i, n, off;
+    for (k in groups) if (groups.hasOwnProperty(k)) {
+      n = groups[k]; if (!n) continue;
+      off = r() * 0.6 - 0.3;
+      for (i = 0; i < n; i++) slots.push({ f: k, at: (i + 0.5 + off) / n });
+    }
+    slots.sort(function (a, b) { return a.at - b.at; });
+    return slots.map(function (s) { return s.f; });
+  }
+
+  function fatesForCycle(loop) {
+    if (bag.length < SCEN.length) {
+      bag = bag.concat(spread(quotaBag(BAG_N, loop), rng(loop * 7919 + 104729)));
+    }
+    return bag.splice(0, SCEN.length);
+  }
 
   /* ------------------------------------------------------------ the feed icons
      One glyph per event type, cut in the weight of the five already in the
@@ -153,7 +301,7 @@
      «Письмо ЛПР отправлено» rides the mail step and not the fifth dial.
      -------------------------------------------------------------------- */
 
-  function buildSteps(co) {
+  function buildSteps(name, fate) {
     var out = [], a;
 
     function add(kind, opt) {
@@ -161,59 +309,102 @@
       var st = ST[kind];
       out.push({
         kind:   kind,
-        client: co.name,
+        client: name,
         task:   opt.task !== undefined ? opt.task : st.t,
         next:   opt.next !== undefined ? opt.next : st.n,
         dur:    st.d,
+        call:   !!opt.call,
         events: opt.events || null,
         close:  opt.close || null
       });
       return out[out.length - 1];
     }
 
-    if (co.fate === 'sec' || co.fate === 'silent') {
-      var miss = co.fate === 'sec' ? 'Секретарь не соединил' : 'Никто не ответил';
+    /* ONE line per step, never a bundle. Two things were wrong with the bundle.
+       The first port put a line on every one of the five dials, so one company
+       shouted eleven times into a five-row feed while nineteen others were
+       silent. And the lines a company did produce all arrived in the same
+       instant - «Выход на ЛПР» and «Контакт закрыт: отказ» together - so the
+       mixer, which can only emit one at a time, kept the newer and the green
+       line that the client actually came to see was never once shown. Each
+       line now rides the step it is true at the end of, and they are minutes of
+       operator time apart: the decision maker is reached when the conversation
+       ends, the deal is created while the card is being filled, the proposal
+       goes out with the letter. */
+    if (fate === 'sec' || fate === 'silent') {
+      var miss = fate === 'sec' ? 'Секретарь не соединил' : 'Никто не ответил';
       add('search');
       for (a = 1; a <= 5; a++) {
         add('dial', { task: 'Дозвон, ' + a + ' из 5' });
-        if (co.fate === 'sec') add('sec');
-        /* attempts one to four report themselves as soon as they fail; the
-           fifth waits for the letter, so its three lines stay consecutive */
-        if (a < 5) out[out.length - 1].events = [miss, 'Попытка ' + a + ' из 5'];
+        if (fate === 'sec') add('sec');
       }
+      out[out.length - 1].events = [miss];        /* the fifth attempt reports */
       add('crm', { next: 'Письмо ЛПР' });
       add('mail', {
-        events: [miss, 'Попытка 5 из 5', 'Письмо ЛПР отправлено'],
+        events: ['Письмо ЛПР отправлено'],
         close:  { talked: false, interested: false, offered: false }
       });
-      return out;
+      return close(out);
     }
 
     add('search');
     add('dial', { task: 'Дозвон, 1 из 5' });
-    add('talk');
+    /* the recording is cut and the decision maker is booked here, at the end of
+       the conversation itself - not when the card is finally closed */
+    add('talk', { call: true, events: ['Выход на ЛПР'] });
 
-    if (co.fate === 'refuse') {
+    if (fate === 'refuse') {
       add('crm', {
         next:   'Закрыть контакт',
-        events: ['Выход на ЛПР', 'Контакт закрыт: отказ'],
+        events: ['Контакт закрыт: отказ'],
         close:  { talked: true, interested: false, offered: false }
       });
-    } else if (co.fate === 'soft') {
+    } else if (fate === 'soft') {
       add('crm', { next: 'Перезвонить' });
       add('follow', {
-        events: ['Выход на ЛПР', 'Задача: перезвонить'],
+        events: ['Задача: перезвонить'],
         close:  { talked: true, interested: true, offered: false }
       });
     } else {                                                    /* offer */
-      add('crm', { next: 'Письмо ЛПР' });
+      add('crm', { next: 'Письмо ЛПР', events: ['Создана сделка'] });
       add('mail', {
-        events: ['Выход на ЛПР', 'Создана сделка', 'Отправлено КП'],
+        events: ['Отправлено КП'],
         close:  { talked: true, interested: true, offered: true }
       });
     }
-    return out;
+    return close(out);
+
+    /* what the company cost the three of them, carried on the closing step so
+       the money can be charged from the work and not from a flat slice */
+    function close(list) {
+      var dur = 0, i;
+      for (i = 0; i < list.length; i++) dur += list[i].dur;
+      for (i = 0; i < list.length; i++) if (list[i].close) list[i].close.dur = dur;
+      return list;
+    }
   }
+
+  /* The average company, weighted by the base rates - the yardstick every
+     company's own length is priced against. */
+  var AVG_DUR = (function () {
+    var pl = RATE.lpr.base, pi = RATE.inter.base, po = RATE.offer.base;
+    var w = {
+      silent: (1 - pl) * 0.5,
+      sec:    (1 - pl) * 0.5,
+      refuse: pl * (1 - pi),
+      soft:   pl * pi * (1 - po),
+      offer:  pl * pi * po
+    };
+    var sum = 0, k;
+    for (k in w) if (w.hasOwnProperty(k)) sum += w[k] * fateDur(k);
+    return sum;
+
+    function fateDur(fate) {
+      var list = buildSteps('', fate), d = 0, i;
+      for (i = 0; i < list.length; i++) d += list[i].dur;
+      return d;
+    }
+  })();
 
   /* ------------------------------------------------------ the feed event map
      Every event type carries its own glyph AND its own colour, so the feed is
@@ -240,6 +431,9 @@
 
   function eventKind(text) {
     if (text.indexOf('Попытка') === 0)     return 'retry';
+    if (text.indexOf('План выполнен') === 0) return 'deal';      /* период закрыт  */
+    if (text.indexOf('Период закрыт') === 0) return 'kp';        /* отчёт клиенту  */
+    if (text.indexOf('Новый период') === 0)  return 'callback';  /* открыт заново  */
     if (text === 'Никто не ответил')       return 'noanswer';
     if (text === 'Секретарь не соединил')  return 'secblock';
     if (text === 'Письмо ЛПР отправлено')  return 'letter';
@@ -252,11 +446,15 @@
 
   /* --------------------------------------------------------- the three rings
      One ring per operator. Its own speed is chosen so that the ring takes
-     exactly the active part of the loop, whatever its real length: op 2 has
-     five attempts on every one of its seven companies and simply works faster
-     on screen than the other two. Over one loop each ring turns exactly once,
-     so all twenty companies close and the counters land on 140 / 93 / 51 / 21
-     by construction, never by a nudge at the end. */
+     exactly the active part of the loop, whatever its real length: an operator
+     dealt seven walls this ring has thirty-five dials to get through and simply
+     works faster on screen than one dealt four conversations. Over one loop
+     each ring turns exactly once, so all twenty companies close - twenty every
+     ring, whatever the fates - and the counters advance by exactly twenty
+     processed companies, never by a nudge at the end.
+
+     What the ring does NOT do any more is decide the numbers. It decides which
+     company is on screen; the counters live above it and accumulate. */
 
   var CYCLE_ACTIVE = 195;                              /* seconds of wall clock */
   var CYCLE_PAUSE  = 15;                               /* only the timers move  */
@@ -268,18 +466,24 @@
   var PHASE_ROTATE = 0.137;
 
   var ops = [1, 2, 3].map(function (n) {
-    var steps = [], cum = [], sum = 0;
-    SCEN.forEach(function (co) {
-      if (co.op !== n) return;
-      buildSteps(co).forEach(function (s) { steps.push(s); });
-    });
-    steps.forEach(function (s) { sum += s.dur; cum.push(sum); });
-    return {
-      n: n, steps: steps, cum: cum, total: sum,
-      speed: sum / CYCLE_ACTIVE,     /* real seconds per wall second */
-      off: 0, done: 0, painted: -1
-    };
+    return { n: n, steps: [], cum: [], total: 0, speed: 1, off: 0, done: 0, painted: -1 };
   });
+
+  /* Deal the ring its twenty fates and rebuild the three queues from them. */
+  function buildCycle(loop) {
+    var fates = fatesForCycle(loop);
+    ops.forEach(function (op) { op.steps = []; op.cum = []; op.total = 0; });
+    SCEN.forEach(function (co, i) {
+      var op = ops[co.op - 1];
+      buildSteps(co.name, fates[i]).forEach(function (s) { op.steps.push(s); });
+    });
+    ops.forEach(function (op) {
+      var sum = 0;
+      op.steps.forEach(function (s) { sum += s.dur; op.cum.push(sum); });
+      op.total = sum;
+      op.speed = sum / CYCLE_ACTIVE;   /* real operator seconds per wall second */
+    });
+  }
 
   function endAt(op, k) {
     return Math.floor(k / op.steps.length) * op.total + op.cum[k % op.steps.length];
@@ -380,6 +584,20 @@
 
   var lastClock = '', lastDay = '';
 
+  /* Days the reporting window has moved since the board opened: thirty for
+     every period that has closed under the visitor's eyes. The clock, the
+     weekday and the date stay the machine's own real Yerevan time - only the
+     period's own window travels. */
+  var periodShift = 0;
+
+  /* Seconds of board time since the engine started, and the rate the event log
+     runs at against them. Two board seconds to the wall second is the smallest
+     compression that still puts a different minute on every feed row; anything
+     slower and all five rows print one minute, which is the thing the client
+     noticed. */
+  var simT = 0;
+  var WORK_RATE = 2;
+
   function paintClock() {
     var t = yerevan(new Date());
     var hhmmss = pad2(t.h) + ':' + pad2(t.mi) + ':' + pad2(t.s);
@@ -393,18 +611,21 @@
     el.weekday.textContent = WEEKDAY[t.w] + ' (Армения  GMT+4)';
     el.date.textContent    = t.d + ' ' + MON_GEN[t.m - 1] + ' ' + t.y;
 
-    var a = shiftDays(t, -20), b = shiftDays(t, 10);
+    var a = shiftDays(t, -20 + periodShift), b = shiftDays(t, 10 + periodShift);
     el.range.textContent = a.d + ' ' + MON_SHORT[a.m - 1] + ' — ' +
                            b.d + ' ' + MON_SHORT[b.m - 1] + ' ' + b.y;
   }
 
-  function hhmmNow() {
-    var t = yerevan(new Date());
+  function hhmmBack(minutes) {
+    var t = yerevan(new Date(Date.now() - minutes * 60000));
     return pad2(t.h) + ':' + pad2(t.mi);
   }
 
-  function hhmmBack(minutes) {
-    var t = yerevan(new Date(Date.now() - minutes * 60000));
+  /* The stamp the feed and the recordings carry: the board's own compressed
+     clock, frozen into the row at the moment it is written and never rewritten
+     afterwards, so a line that has arrived never changes its time again. */
+  function hhmmWork() {
+    var t = yerevan(new Date(Date.now() + simT * (WORK_RATE - 1) * 1000));
     return pad2(t.h) + ':' + pad2(t.mi);
   }
 
@@ -420,7 +641,36 @@
     node.classList.add(cls);
   }
 
-  var state = { comp: 0, lpr: 0, inter: 0, offer: 0, used: 0 };
+  var state = { comp: START.comp, lpr: START.lpr, inter: START.inter,
+                offer: START.offer, used: START.used };
+
+  /* A price needs something to divide by. In the first seconds of a fresh
+     period there is no decision maker yet, and a board that answers that with
+     a 0 is telling the client a lie about a number he is paying for. In the
+     shipped model this branch is unreachable - a period opens on forty-two
+     companies already worked - and it is kept as the guard it is. */
+  function price(sum, n) { return n > 0 ? to100(sum / n) : '—'; }
+
+  /* THE TWO PRICE CHIPS WERE DRAWN FOR A FOUR-FIGURE NUMBER. The design's own
+     values are 2600 and 4700, and the box holds them with nine pixels of chip
+     to spare. An honest funnel makes the price of an interested lead a
+     five-figure one - about 22 000 драм - and five figures at the design's own
+     width are 45.75px where 36.59 are free between the dram sign and the right
+     margin: the number ends 0.25px short of the chip's edge, flush against a
+     border the design gives it nine pixels of air from. An independent audit
+     read the magnified crop as a digit painted outside the chip.
+
+     It is set on the FONT'S OWN WIDTH AXIS instead - the same face, size,
+     weight and baseline, narrower glyphs - which is the mechanism the design
+     file itself declares on these nodes (`font-variation-settings: 'wdth' 100`).
+     Four figures and under are not touched at all, so the accepted rendering of
+     2600 and 4700 is byte-identical to the frame; only a number the design has
+     no room for is narrowed, and only as far as it must be. */
+  function setPrice(node, text) {
+    node.textContent = text;
+    var n = text.length;
+    node.style.fontVariationSettings = n <= 4 ? '' : (n === 5 ? "'wdth' 80" : "'wdth' 75");
+  }
 
   /* The whole numeric board in one call, so a number and its percentage can
      never be one tick apart: both are written before the frame is handed back
@@ -438,8 +688,8 @@
     el.kPct[3].textContent = pct(state.offer, state.inter) + '%';
 
     el.used.textContent   = money(state.used);
-    el.priceL.textContent = to100(state.used / state.lpr);
-    el.priceI.textContent = to100(state.used / state.inter);
+    setPrice(el.priceL, price(state.used, state.lpr));
+    setPrice(el.priceI, price(state.used, state.inter));
 
     var bar = pct(state.used, PAID);
     el.barPct.textContent   = bar + '%';
@@ -512,15 +762,19 @@
   }
 
   function pushFeed(text, time) {
-    feed.unshift({ text: text, time: time || hhmmNow(), kind: eventKind(text) });
+    feed.unshift({ text: text, time: time || hhmmWork(), kind: eventKind(text) });
     feed.length = 5;
     paintFeed(true);
   }
 
   /* --------------------------------------------------------------- last calls
      Only companies where a conversation with the decision maker really took
-     place reach this table - thirteen of the twenty. Time and name, nothing
-     else; the waveform and the download disc stay as the design's furniture. */
+     place reach this table - about six of every twenty, and the recording is
+     written at the moment the conversation ends, not when the card is finally
+     closed, so it stands a minute or two AHEAD of that company's own line in
+     the feed, which is the order the two things really happen in. Time and
+     name, nothing else; the waveform and the download disc stay as the
+     design's furniture. */
   var calls = [];
 
   function paintCalls(fadeTop) {
@@ -535,10 +789,43 @@
     flash(el.lc[0].company, 'cc-in');
   }
 
+  /* The twenty companies come round again every ring, so without this a company
+     called twice inside three minutes stood twice in a five-row table of «last
+     calls» - which reads as a bug, not as a second conversation. The table
+     carries the LAST call per company: a repeat moves the company to the top
+     with its new time instead of adding a second row, and five distinct
+     companies are always on screen. */
   function pushCall(name, time) {
-    calls.unshift({ name: name, time: time || hhmmNow() });
+    for (var i = 0; i < calls.length; i++) {
+      if (calls[i].name === name) { calls.splice(i, 1); break; }
+    }
+    calls.unshift({ name: name, time: time || hhmmWork() });
     calls.length = 5;
     paintCalls(true);
+  }
+
+  /* Recordings are paced exactly like the feed and for exactly the same reason.
+     Three operators finish three conversations inside the same few seconds far
+     more often than chance suggests - the ring closes all three queues together
+     - and the table then stood with three rows carrying one minute. They wait
+     their turn instead. The queue holds three: what this table is for is the
+     LAST calls, so a recording that has been waiting through two others is not
+     worth showing at all. */
+  var callQ = [], lastCallT = -1e9, callsOut = 0;
+  var CALL_PACE_S = 31;
+
+  function callPaceS() { return CALL_PACE_S + (callsOut * 5) % 8; }   /* 31 .. 38 */
+
+  function queueCall(name) {
+    callQ.push(name);
+    while (callQ.length > 3) callQ.shift();
+  }
+
+  function drainCall(time) {
+    if (!callQ.length) return false;
+    callsOut++;
+    pushCall(callQ.shift(), time);
+    return true;
   }
 
   /* ============================================================== 6. THE NOTICE
@@ -823,23 +1110,41 @@
   /* The board is never seen empty. The feed and the calls table are seeded with
      events from this same scenario, which is also what retires the duplicated
      «Создана сделка: ABC Hotel» the frozen frame carried twice. */
-  function seed() {
-    [['Отправлено КП', 4], ['Создана сделка', 5], ['Выход на ЛПР', 6],
-     ['Попытка 3 из 5', 11], ['Секретарь не соединил', 12]
+  /* `back` pushes the whole seeded history further into the past. It is zero on
+     the live board, where these five rows are simply the last few minutes. The
+     freeze-frame passes the span it is about to wind through, because the still
+     frame writes a history of its own on top of these rows and only replaces as
+     many of them as that half ring really produced - three recordings, not five,
+     now that fewer than three calls in ten reach anybody. Without the offset the
+     rows left over from the seed carried times NEWER than the ones written over
+     them, and the still frame stood with its recordings out of order. */
+  function seed(back) {
+    /* five kinds, five colours, and the same two-in-three failure the live feed
+       carries - the opening screen must not promise a success rate the rest of
+       the hour will not keep. The spacing is the live cadence, so nothing about
+       the column changes character when the first real line arrives. */
+    [['Отправлено КП', 1], ['Письмо ЛПР отправлено', 3], ['Выход на ЛПР', 5],
+     ['Никто не ответил', 8], ['Секретарь не соединил', 12]
     ].forEach(function (p) {
-      feed.push({ text: p[0], time: hhmmBack(p[1]), kind: eventKind(p[0]) });
+      var k = eventKind(p[0]);
+      feed.push({ text: p[0], time: hhmmBack(p[1] + back), kind: k });
+      lastKindAt[k] = 0;               /* these five are already on the board */
     });
-    [['Ани Строй', 4], ['Норк Медикал', 9], ['Каскад Отель', 17],
-     ['Арарат Мебель', 24], ['Тигран Авто', 31]
-    ].forEach(function (p) { calls.push({ name: p[0], time: hhmmBack(p[1]) }); });
+    [['Ани Строй', 2], ['Норк Медикал', 4], ['Каскад Отель', 7],
+     ['Арарат Мебель', 11], ['Тигран Авто', 16]
+    ].forEach(function (p) { calls.push({ name: p[0], time: hhmmBack(p[1] + back) }); });
     paintFeed(false);
     paintCalls(false);
   }
 
+  /* The ring turns; the counters do not turn with it. resetCycle deals a new
+     set of twenty fates and puts the three operators back on their phases -
+     and touches nothing the client is reading. The whole of the old defect was
+     the five lines that used to stand here, handing comp, lpr, inter, offer and
+     the used sum back to their opening values every 210 seconds while a visitor
+     watched the result, and the money already spent, jump backwards. */
   function resetCycle(loop) {
-    state.comp = START.comp; state.lpr = START.lpr; state.inter = START.inter;
-    state.offer = START.offer; state.used = START.used;
-    paintNumbers(false);                          /* one frame, no animation */
+    buildCycle(loop);
     ops.forEach(function (op, i) {
       var frac = (PHASE[i] + loop * PHASE_ROTATE) % 1;
       op.off = frac * op.total;
@@ -849,19 +1154,40 @@
     });
   }
 
-  function completeStep(op) {
+  /* What one company costs: its own length against the average one, at the
+     project's own rate, on a burn that drifts ring by ring - so the budget bar
+     and the plan bar stop moving as one. The last two lines are the only hard
+     rules in the money: the used sum can never outrun the runway that is left,
+     and can never pass the paid sum. */
+  function burnAt(loop) { return 1 + COST_SWING * Math.sin(loop * 0.83 + COST_PHASE); }
+
+  function costOf(dur, burn) {
+    var c    = NOMINAL * COST_LEVEL * burn * (dur / AVG_DUR);
+    var head = PAID - state.used;
+    var left = PLAN - state.comp;
+    if (left > 0) c = Math.min(c, head / left * 1.25);
+    return Math.max(0, Math.min(c, head));
+  }
+
+  function companyCost(loop, dur) { return costOf(dur, burnAt(loop)); }
+
+  function completeStep(op, loop) {
     var step = op.steps[op.done % op.steps.length];
+
+    /* the recording is cut when the conversation ends */
+    if (step.call) queueCall(step.client);
+
     if (step.events) {
-      step.events.forEach(function (t) { enqueue(t, op.n); });
+      step.events.forEach(function (t) { enqueue(t, op.n, step.client); });
     }
     if (step.close) {
-      state.comp  += 1;
-      state.used  += COST_PER_COMPANY;
+      state.used += companyCost(loop, step.close.dur);
+      state.comp += 1;
       if (step.close.talked)     state.lpr   += 1;
       if (step.close.interested) state.inter += 1;
       if (step.close.offered)    state.offer += 1;
       paintNumbers(true);
-      if (step.close.talked) pushCall(step.client, backMin ? hhmmBack(backMin) : null);
+      if (state.comp >= PLAN) beginClose();
     }
   }
 
@@ -871,68 +1197,259 @@
   var backMin = 0;
 
   /* ------------------------------------------------------------- the mixer
-     Operator 02 carries thirty-five dials and seven letters against the other
-     two operators' twenty-nine results, so left to run in generation order the
-     feed fills with «Никто не ответил» and the client sees nothing but failure.
-     The generation is NOT touched - the counters hang off it, and they are
-     signed off - so the mixing happens here, at the point of output:
+     Twenty companies close in every ring and they generate about forty lines,
+     while five rows of feed can honestly carry six or seven of them in the same
+     time. The mixer is what chooses, and it chooses on three rules:
 
-        never three lines of one event type in a row, and
-        never three lines from one operator in a row.
+        the line must be RECENT - nothing older than STALE_S seconds of board
+          time is ever shown, so every row on the board belongs to a company one
+          of the three operators has just finished;
+        never three lines of one event type in a row, and never three from one
+          operator in a row;
+        where the rules leave a choice, a result line - a decision maker
+          reached, a deal, a proposal, a refusal, a callback - beats a dial.
 
-     Only operators 01 and 03 ever produce a result line, so the second rule on
-     its own puts at least one result inside any five consecutive rows, and both
-     rules together put at least two operators there.
+     When a line is emitted, everything OLDER than it is dropped: it has been
+     superseded by newer work, and the feed's times can then never fall out of
+     order. The pace is one line per PACE_S of wall clock, jittered by a few
+     seconds off the emitted count so the column never ticks like a metronome -
+     and never dumps four lines into one second the way the 700 ms drain did. */
+  var queue = [], lastDrainT = -1e9, emitted = 0;
+  var PACE_S  = 31;                    /* wall seconds between two feed lines  */
 
-     When every pending line is blocked, nothing is emitted on that tick and the
-     queue waits. A queue longer than QUEUE_MAX drops its oldest NON-result
-     line, so what the feed shows is always recent work and never a backlog;
-     result lines are never dropped. */
-  var queue = [], lastDrain = 0;
-  var DRAIN_MS = 700;
-  var QUEUE_MAX = 12;
+  /* A line older than this is yesterday's work and is dropped unsaid. It has to
+     be several times the pace, not just above it: at 45 seconds against a 31-38
+     second pace a line that lost ONE round was dead, and since a company emits
+     its two rare lines eight seconds apart, one of the pair always lost that
+     round. Measured: «Отправлено КП» was generated eight times in 2 700 board
+     seconds and shown ZERO times, while «Создана сделка» - its own predecessor,
+     from the same company - was shown five. A hundred seconds gives every line
+     three turns. */
+  var STALE_S = 100;
   var MAX_RUN = 2;
-  var runKind = null, runKindN = 0, runOp = 0, runOpN = 0;
+  var runKind = null, runOp = 0, runOpN = 0;
 
-  function enqueue(text, opN) {
-    var kind = eventKind(text), i;
-    queue.push({ t: text, op: opN, k: kind, result: EV[kind].result });
-    if (queue.length <= QUEUE_MAX) return;
+  /* Never under 31 wall seconds, which at two board seconds to the wall second
+     is over a minute of board time - the floor that keeps two rows of the feed
+     from printing the same HH:MM. The jitter on top of it comes off the count
+     of lines already emitted, so the column never ticks like a metronome and
+     nothing here needs a random number.
+
+     The ONE exception is the period close, and it is deliberate: its three
+     lines are paced four seconds apart because a close is one moment, not three
+     minutes of work, so they share a stamp. Everything an operator does obeys
+     the floor. */
+  function paceS() { return PACE_S + (emitted * 7) % 8; }       /* 31 s .. 38 s */
+
+  /* board seconds at which each event type was last put on the board */
+  var lastKindAt = {};
+  var STARVE_S = 45, STARVE_MAX = 8;
+  var AGE_STEP = 6,  AGE_MAX    = 8;
+
+  function starve(k) {
+    var t = lastKindAt[k];
+    if (t === undefined) return STARVE_MAX;        /* never yet said */
+    return Math.min(STARVE_MAX, (simT - t) / STARVE_S);
+  }
+
+  function enqueue(text, opN, client) {
+    var kind = eventKind(text);
+    queue.push({ t: text, op: opN, k: kind, at: simT, co: client || null });
+    while (queue.length && simT - queue[0].at > STALE_S) queue.shift();
+  }
+
+  /* An event type is never repeated on the row below itself. When the queue has
+     nothing but the type just shown, the feed says NOTHING on that tick and
+     waits a few seconds for the next company to finish - which costs at most a
+     few seconds of pace and buys a column where «Письмо ЛПР отправлено» never
+     stands on top of «Письмо ЛПР отправлено». The operator rule still allows
+     two, because three rows from one operator is the thing it exists to stop. */
+  function pick() {
+    var i, e, best = -1, bestScore = -1, score;
     for (i = 0; i < queue.length; i++) {
-      if (!queue[i].result) { queue.splice(i, 1); return; }
+      e = queue[i];
+      if (simT - e.at > STALE_S) continue;
+      if (e.k === runKind) continue;
+      if (e.op === runOp && runOpN >= MAX_RUN) continue;
+      /* The OLDEST line that is still current wins, not the freshest. Freshest
+         starved a whole event type: every company books its decision maker and
+         then closes its card six seconds later, so «Выход на ЛПР» was outranked
+         by its own successor every single time and the green line the client
+         came to see was never once shown. Taking the oldest still-current line
+         samples the work evenly instead, and no type can be shut out.
+
+         The head start goes to whatever has been WAITING longest to be said,
+         not to whatever counts as a success. A flat bonus for result lines was
+         tried and measured, and an independent audit costed it: it showed
+         «Выход на ЛПР» 2.11 times more often than the project produces it and
+         «Секретарь не соединил» 0.38 times as often, so the column read more
+         successful than the cards beside it - the same flattery this заход
+         exists to remove, moved from the numbers into the feed. Meanwhile the
+         two lines a client actually waits for, «Создана сделка» and
+         «Отправлено КП», are six each in a period of 175 companies, and a
+         five-minute look had a 63 % chance of containing neither.
+
+         Starvation fixes both at once. A type that has just been shown carries
+         nothing; a type unseen for a while carries one place per 45 seconds, up
+         to eight. Common lines are shown often, so they never accumulate any;
+         rare ones accumulate and win the moment they occur, which is exactly
+         what a proposal going out deserves. Nothing is over-shown, because a
+         type can only win when it is genuinely in the queue.
+
+         Both halves are capped at the same eight places, so neither can drown
+         the other: a line reaches its full waiting weight after 48 seconds, a
+         type its full starvation weight after six minutes. */
+      score = Math.min(AGE_MAX, (simT - e.at) / AGE_STEP) + starve(e.k);
+      if (score > bestScore) { bestScore = score; best = i; }
     }
-    queue.shift();
+    return best;
   }
 
   function drain(time) {
-    for (var i = 0; i < queue.length; i++) {
-      var e = queue[i];
-      if (e.k === runKind && runKindN >= MAX_RUN) continue;
-      if (e.op === runOp  && runOpN   >= MAX_RUN) continue;
-      queue.splice(i, 1);
-      runKindN = e.k  === runKind ? runKindN + 1 : 1; runKind = e.k;
-      runOpN   = e.op === runOp   ? runOpN   + 1 : 1; runOp   = e.op;
-      pushFeed(e.t, time);
-      return true;
+    var best = pick();
+    if (best < 0) return false;
+    var e = queue[best];
+    queue.splice(best, 1);
+    runKind  = e.k;
+    lastKindAt[e.k] = simT;
+    runOpN   = e.op === runOp ? runOpN + 1 : 1; runOp = e.op;
+    emitted++;
+    pushFeed(e.t, time);
+    return true;
+  }
+
+  /* A line the board says itself, not one an operator produced. It still counts
+     against the repeat rules, so the first ordinary line after a closing does
+     not land on top of one of them. */
+  function announce(text) {
+    pushFeed(text, hhmmWork());
+    runKind = eventKind(text);
+    lastKindAt[runKind] = simT;
+    runOp = 0; runOpN = 1;
+  }
+
+  /* ------------------------------------------------------ closing the period
+     The plan is met, and that is an event, not a silent snap back to the start.
+     The board holds the finished result for CLOSE_HOLD seconds: the three
+     operators stop taking companies and stand on the same closing line, the
+     numbers stay where they finished, and the feed says in three steps what has
+     happened. Only then does a NEW period open - counters at zero against a
+     fresh budget of the same 300 000, and the reporting window thirty days
+     further on, which is the signal that cannot be mistaken for a glitch.
+
+     The three closing lines take event types the feed already owns, so nothing
+     new is introduced into a palette that has been signed off: a deal for the
+     plan met, a despatched document for the report, a booked task for the
+     period that opens. */
+  var mode = 'run', modeAt = 0, closeLines = [], lastCloseAt = 0;
+  var CLOSE_HOLD = 16;                 /* seconds the finished period stays up */
+  var CLOSE_PACE = 4;
+
+  function beginClose() {
+    if (mode !== 'run') return;
+    mode = 'close'; modeAt = simT; lastCloseAt = simT - CLOSE_PACE;
+    queue.length = 0;
+    runKind = null; runOp = 0; runOpN = 0;
+    closeLines = [
+      'План выполнен: ' + PLAN + ' компаний',
+      'Период закрыт, отчёт отправлен'
+    ];
+    ops.forEach(function (op, i) {
+      var last = op.steps[(op.done - 1 + op.steps.length) % op.steps.length];
+      paintRow(i, { kind: 'crm', client: last ? last.client : '',
+                    task: 'Итоги периода', next: 'Новый период' });
+      op.painted = -2;                 /* forces a repaint when work resumes */
+    });
+  }
+
+  /* The changeover is not an instant. Closing a month, invoicing it and opening
+     the next one takes days, and the operators do not sit still through them:
+     when the new period's report is opened, its first days are already in the
+     books. So the counters do not come back at a bare zero - they come back at
+     the thirty companies those days really produced, dealt from the same rates
+     by the same generator and charged by the same rule. It is also the only way
+     the four chips can be honest on the first screen: one interested lead out
+     of one decision maker is a true 100 %, and it is exactly the number this
+     board was rebuilt to stop printing. */
+  /* Forty-two, not thirty. Thirty opened a period with two interested leads and
+     one proposal, and the КП chip then printed 2 of 3 - a true, arithmetically
+     obvious 67 % that is nevertheless the exact kind of figure this заход
+     exists to keep off the board. Forty-two opens on three or four, which is
+     the smallest denominator that cannot produce one. */
+  var PERIOD_SEED = 42;
+
+  function seedPeriod(loop) {
+    var fates = spread(quotaBag(PERIOD_SEED, loop), rng(loop * 6151 + 22307));
+    var i, j, list, cl;
+    state.comp = 0; state.lpr = 0; state.inter = 0; state.offer = 0; state.used = 0;
+    for (i = 0; i < fates.length; i++) {
+      list = buildSteps('', fates[i]); cl = null;
+      for (j = 0; j < list.length; j++) if (list[j].close) cl = list[j].close;
+      /* charged at the flat rate, not at one ring's burn: these thirty companies
+         are several days of work, not three and a half minutes of it */
+      state.used += costOf(cl.dur, 1);
+      state.comp += 1;
+      if (cl.talked)     state.lpr   += 1;
+      if (cl.interested) state.inter += 1;
+      if (cl.offered)    state.offer += 1;
     }
-    return false;
+  }
+
+  function openPeriod() {
+    mode = 'run';
+    periodShift += 30;
+    seedPeriod(curLoop + 1);
+    lastDay = '';                      /* forces the new window onto the board */
+    paintClock();
+    paintNumbers(false);
+    announce('Новый период: план ' + PLAN);
+    lastDrainT = simT;
   }
 
   /* ================================================================ 8. LOOP */
 
-  var t0 = null, curLoop = -1, lastClockAt = 0;
+  /* Two clocks. simT is board time and never stops - the event log rides on it,
+     so a stamp written before the period closed and one written after it are
+     still in the right order. runT is the RING's time and stops while the
+     finished period is held on screen, so the sixteen seconds of the closing
+     are not sixteen seconds of work nobody sees. */
+  var lastNow = null, curLoop = -1, lastClockAt = 0, runT = 0;
+  var DT_MAX = 0.25;                   /* a hidden tab must not skip an hour */
 
   function frame(now) {
-    if (t0 === null) t0 = now;
-    var t = (now - t0) / 1000;
-    var loop = Math.floor(t / CYCLE);
-    var cyc  = t - loop * CYCLE;
+    if (lastNow === null) lastNow = now;
+    var dt = (now - lastNow) / 1000;
+    lastNow = now;
+    if (!(dt > 0)) dt = 0;
+    if (dt > DT_MAX) dt = DT_MAX;
+    simT += dt;
 
-    if (loop !== curLoop) {
-      curLoop = loop; resetCycle(loop);
-      queue.length = 0;
-      runKind = null; runKindN = 0; runOp = 0; runOpN = 0;
+    if (mode === 'close') {
+      var held = simT - modeAt;
+      for (var j = 0; j < 3; j++) el.rows[j].time.textContent = mmss(held);
+      if (closeLines.length && simT - lastCloseAt >= CLOSE_PACE) {
+        lastCloseAt = simT;
+        announce(closeLines.shift());
+      }
+      if (held >= CLOSE_HOLD) {
+        openPeriod();
+        runT = (curLoop + 1) * CYCLE;  /* the new period starts on a fresh ring */
+      }
+      if (now - lastClockAt >= 200) { lastClockAt = now; paintClock(); }
+      requestAnimationFrame(frame);
+      return;
     }
+
+    runT += dt;
+    var loop = Math.floor(runT / CYCLE);
+    var cyc  = runT - loop * CYCLE;
+
+    /* The ring turning is a change of company, not a break in the day. It used
+       to throw the pending lines away and forget which type was last shown,
+       because everything downstream of it was being reset anyway; now that the
+       counters carry over, so does the feed - otherwise the first line after
+       every 210 seconds could, and did, land on top of its own twin. */
+    if (loop !== curLoop) { curLoop = loop; resetCycle(loop); }
 
     var active = cyc <= CYCLE_ACTIVE;
     var walk = Math.min(cyc, CYCLE_ACTIVE);
@@ -940,12 +1457,20 @@
     for (var i = 0; i < 3; i++) {
       var op = ops[i];
 
-      if (active) {
+      if (active && mode === 'run') {
         /* at the very end of the active phase the ring is closed exactly, not by
            floating point: the twentieth company must close, never miss by an ulp */
         var pos = walk >= CYCLE_ACTIVE ? op.off + op.total : op.off + walk * op.speed;
-        while (pos >= endAt(op, op.done)) { completeStep(op); op.done++; }
+        while (pos >= endAt(op, op.done)) {
+          completeStep(op, loop); op.done++;
+          /* the plan was met on that company. At the ring's last tick this loop
+             closes a whole queue at once, and without this the counter would
+             walk past 175 and the board would print 101 % of the plan before
+             the closing it has already begun could put it on screen. */
+          if (mode !== 'run') break;
+        }
       }
+      if (mode !== 'run') break;       /* the plan was met inside this very tick */
 
       var start = op.done === 0 ? 0 : endAt(op, op.done - 1);
       var idx = op.done % op.steps.length;
@@ -958,7 +1483,10 @@
       el.rows[i].time.textContent = mmss(elapsed);
     }
 
-    if (queue.length && now - lastDrain >= DRAIN_MS && drain(null)) lastDrain = now;
+    if (mode === 'run' && queue.length && simT - lastDrainT >= paceS() && drain(null))
+      lastDrainT = simT;
+    if (mode === 'run' && callQ.length && simT - lastCallT >= callPaceS() && drainCall(null))
+      lastCallT = simT;
 
     if (now - lastClockAt >= 200) { lastClockAt = now; paintClock(); }
     requestAnimationFrame(frame);
@@ -992,19 +1520,34 @@
 
     /* wound forward a second at a time across all three operators at once, not
        one operator to the end and then the next: otherwise the five rows left
-       in the feed would all come from whichever operator ran last */
-    var walk = CYCLE_ACTIVE / 2, t, i, op, pos;
+       in the feed would all come from whichever operator ran last.
+
+       A ring and a half, not half a ring. The three rows land on exactly the
+       same step either way - a whole ring is a whole number of steps for every
+       operator - but the extra ring is the history the two tables need: fewer
+       than three calls in ten now reach anybody, so half a ring produced three
+       recordings and left two rows of the seed standing under them.
+
+       The wind uses the LIVE pacing and the live clock rate, not a private one.
+       The old still frame emitted a line every six seconds and called six
+       seconds a minute; the live board emits one every thirty-odd and calls
+       thirty a minute. Two boards, two speeds, and the still one was the odd
+       one out - it is now wound by the same two rules the live one obeys. */
+    var walk = CYCLE_ACTIVE * 1.5, t, i, op, pos;
     for (t = 0; t <= walk; t++) {
-      backMin = Math.ceil((walk - t) / 6);
+      simT = t;
+      backMin = Math.round((walk - t) * WORK_RATE / 60);
       for (i = 0; i < 3; i++) {
         op = ops[i];
         pos = op.off + t * op.speed;
-        while (pos >= endAt(op, op.done)) { completeStep(op); op.done++; }
-        if (queue.length) drain(hhmmBack(backMin));
+        while (pos >= endAt(op, op.done)) { completeStep(op, 0); op.done++; }
       }
+      if (queue.length  && t - lastDrainT >= paceS()     && drain(hhmmBack(backMin)))
+        lastDrainT = t;
+      if (callQ.length  && t - lastCallT  >= callPaceS() && drainCall(hhmmBack(backMin)))
+        lastCallT = t;
     }
     backMin = 0;
-    while (queue.length && drain(hhmmNow())) { /* flush what the rules still allow */ }
 
     ops.forEach(function (op, i) {
       var start = op.done === 0 ? 0 : endAt(op, op.done - 1);
@@ -1016,13 +1559,18 @@
     setInterval(paintClock, 1000);
   }
 
-  seed();
+  still = prefersStill();
 
-  if (prefersStill()) {
-    still = true;
+  /* the still frame writes its own history over these five rows; whatever it
+     does not reach must still be OLDER than what it does, so the seed is pushed
+     back by the whole span the wind is about to cover */
+  seed(still ? Math.ceil(CYCLE_ACTIVE * 1.5 * WORK_RATE / 60) + 1 : 0);
+
+  if (still) {
     freezeFrame();
   } else {
     resetCycle(0);
+    paintNumbers(false);               /* the opening state, before any motion */
     requestAnimationFrame(frame);
   }
 
