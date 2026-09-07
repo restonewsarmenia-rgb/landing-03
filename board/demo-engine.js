@@ -169,11 +169,18 @@
      `c` goes to the status word, the dot, the activity glyph, the timer and the
      stopwatch; `b` is the operator badge, one step brighter than `c` - the
      relationship the design itself uses (#10D096 over #00A734). */
+  /* `d` is the step's length in the operator's OWN seconds, and it is also the
+     step's SHARE of the ring: a row paints step k for d[k] / op.total of its
+     ninety-seven seconds. The seven values are therefore read twice - as a real
+     working day (a call runs 00:00 -> 02:30, which is where the design's 02:31
+     comes from) and as the pacing of the screen. `dial` and `sec` carry the
+     floor the five-minute period needed; see CYCLE_ACTIVE below for what it
+     cost and why it could not be bought any cheaper. */
   var ST = {
     /*                                                                          colour        badge      */
     search: { s: 'Поиск контакта', t: 'Поиск ЛПР',       n: 'Позвонить',       c: '#29a8e0', b: '#5cc0ea', ic: 'search', d: 60  },  /* голубой    */
-    dial:   { s: 'Набирает',       t: null,              n: 'Дозвониться',     c: '#10c9b0', b: '#45ddc8', ic: 'dial',   d: 30  },  /* бирюзовый  */
-    sec:    { s: 'У секретаря',    t: 'Обход секретаря', n: 'Соединить с ЛПР', c: '#2f7fd0', b: '#5fa0e0', ic: 'sec',    d: 40  },  /* синий      */
+    dial:   { s: 'Набирает',       t: null,              n: 'Дозвониться',     c: '#10c9b0', b: '#45ddc8', ic: 'dial',   d: 54  },  /* бирюзовый  */
+    sec:    { s: 'У секретаря',    t: 'Обход секретаря', n: 'Соединить с ЛПР', c: '#2f7fd0', b: '#5fa0e0', ic: 'sec',    d: 54  },  /* синий      */
     talk:   { s: 'Разговаривает',  t: 'Разговор с ЛПР',  n: 'Выявить интерес', c: '#00a734', b: '#10d096', ic: null,     d: 150 },  /* зелёный    */
     mail:   { s: 'Пишет Email',    t: 'Отправка КП',     n: 'Отправить КП',    c: '#fe9104', b: '#ffa80b', ic: 'mail',   d: 90  },  /* оранжевый  */
     follow: { s: 'Follow Up',      t: 'Отправка КП',     n: 'Позвонить',       c: '#3f57cf', b: '#6f83e0', ic: 'follow', d: 60  },  /* синий      */
@@ -338,6 +345,17 @@
        operator time apart: the decision maker is reached when the conversation
        ends, the deal is created while the card is being filled, the proposal
        goes out with the letter. */
+    /* NOBODY WAS REACHED, SO NOTHING IS OFFERED. The mail step used to sit at
+       the end of this branch too, and it was the board's one outright lie: for
+       companies that rang out five times or were stopped by a secretary the row
+       read «Пишет Email / Отправка КП / Отправить КП» and the feed said «Письмо
+       ЛПР отправлено» - a proposal to a decision maker who was never identified,
+       on 96 % of all mail steps and a sixth of all row time, while the КП
+       counter beside it correctly did not move. The letter is gone, not
+       relabelled: the honest end of an unanswered call is the card being filled
+       in and the number going back into the list, and a shorter row is better
+       than a false one. `mail` is now reachable ONLY through `talk`, so «Пишет
+       Email» always means an offer and always follows a conversation. */
     if (fate === 'sec' || fate === 'silent') {
       var miss = fate === 'sec' ? 'Секретарь не соединил' : 'Никто не ответил';
       add('search');
@@ -346,9 +364,8 @@
         if (fate === 'sec') add('sec');
       }
       out[out.length - 1].events = [miss];        /* the fifth attempt reports */
-      add('crm', { next: 'Письмо ЛПР' });
-      add('mail', {
-        events: ['Письмо ЛПР отправлено'],
+      add('crm', {
+        next:   'Перезвонить',
         close:  { talked: false, interested: false, offered: false }
       });
       return close(out);
@@ -429,6 +446,11 @@
     noanswer: { ic: 'noanswer', c: '#29a8e0', result: false },  /* никто не ответил  — голубой    */
     secblock: { ic: 'secblock', c: '#e0a800', result: false },  /* секретарь         — жёлтый     */
     letter:   { ic: 'letter',   c: '#fea700', result: false },  /* письмо ЛПР        — оранжевый  */
+    /* `letter` is kept in the palette and kept mapped, but nothing produces it
+       any more: the only line that ever carried it claimed a proposal to a
+       decision maker nobody had reached, and it went out with the mail step it
+       rode on. The entry stays so the type can come back the day a truthful
+       letter exists to put on it. */
     lpr:      { ic: 'lpr',      c: '#00a734', result: true  },  /* выход на ЛПР      — зелёный    */
     deal:     { ic: 'deal',     c: '#10c060', result: true  },  /* создана сделка    — зелёный    */
     kp:       { ic: 'kp',       c: '#f2760a', result: true  },  /* отправлено КП     — оранжевый  */
@@ -486,8 +508,44 @@
      day period. Every period now opens exactly as the page opens: fifty-five
      companies left to do, 288.75 seconds of work, plus the sixteen second hold
      that does not shrink - 5.08 minutes, and the first arc a visitor sees is
-     the same length as every one after it. The cost is stated where it is
-     paid: the rows turn twice as fast, a status every 1.25 s instead of 2.5. */
+     the same length as every one after it.
+
+     THE FLOOR THE HALVING NEEDED. Nothing here is a knob for the rows' speed:
+     a ring must close its twenty companies inside CYCLE_ACTIVE whatever the
+     durations are, so the only thing the seven `d` values decide is how the
+     ring's ninety-seven seconds are SHARED OUT between the steps. Halving the
+     ring shared the same seconds among the same steps twice as fast, and the
+     two cheapest steps fell through the floor: a dial at 1.05 s and a secretary
+     at 1.35 s, with 59.6 % of all steps under a second and a half and a
+     secretary card turning eleven times in twelve seconds. `dial` 30 -> 54 and
+     `sec` 40 -> 54 buy the share back - 2.0 % under a second and a half, nine
+     changes in the worst twelve - and they are paid for by the two long steps
+     giving up about a ninth of their own: a conversation 5.22 -> 4.65 s, a
+     letter 3.08 -> 2.73 s, both still by far the longest things on the row.
+
+     54, and not 52, and not 56. The three rows do not run at one speed -
+     operator 1 has six companies and operators 2 and 3 have seven, so rows 2
+     and 3 are about a sixth faster and the floor has to be set for them. At 52
+     they land on EXACTLY 1.50 s, which turns the very test the floor exists to
+     pass into a coin toss: over the same 330 seconds a virtual clock reads 7.6 %
+     of steps under the line and a real browser reads 16.7 % of the same board,
+     because rAF jitter puts a true 1.500 s either side of 1.5. At 54 they sit
+     at 1.525 s, and row 1 at 1.90 s, and the two instruments read 2.4 % and
+     5.2 % - still not the same number, and the honest way to say it is that the
+     floor is CLOSE to 1.5 s and no longer ON it. At 56 neither reading improves
+     and the conversation pays another tenth of a second. Past that the
+     arithmetic runs out: raising the pair keeps shortening everything else, and
+     near 60 a dial attempt becomes as long as filling in the card, which reads
+     as a worse lie than a fast dialler.
+
+     What the floor cannot buy is the flip RATE on a secretary card, because
+     five attempts is ten status words however long each one is: eleven changes
+     in the worst twelve seconds becomes nine, and no value of `d` takes it
+     lower. That needs the chain itself opened, and the chain is not this
+     заход's. Nor does the floor slow the mm:ss timer - the timer's rate IS
+     op.speed, so a longer step means a faster reel, 28 -> 32 operator-seconds
+     per board second. The only lever that would slow it is the ring length,
+     which is the arc. Both are stated in the gate rather than hidden. */
   var CYCLE_ACTIVE = 97.5;                             /* seconds of wall clock */
   var CYCLE_PAUSE  = 7.5;                              /* only the timers move  */
   var CYCLE        = CYCLE_ACTIVE + CYCLE_PAUSE;       /* 1.75 minutes          */
@@ -1190,8 +1248,12 @@
     /* five kinds, five colours, and the same two-in-three failure the live feed
        carries - the opening screen must not promise a success rate the rest of
        the hour will not keep. The spacing is the live cadence, so nothing about
-       the column changes character when the first real line arrives. */
-    [['Отправлено КП', 1], ['Письмо ЛПР отправлено', 3], ['Выход на ЛПР', 5],
+       the column changes character when the first real line arrives. The second
+       line used to be «Письмо ЛПР отправлено»; with the letter retired it would
+       have been a line the board can no longer produce, so it is «Контакт
+       закрыт: отказ» - the third most common thing the funnel really makes, and
+       a grey where the row above it is orange, which the letter never was. */
+    [['Отправлено КП', 1], ['Контакт закрыт: отказ', 3], ['Выход на ЛПР', 5],
      ['Никто не ответил', 8], ['Секретарь не соединил', 12]
     ].forEach(function (p) {
       var k = eventKind(p[0]);

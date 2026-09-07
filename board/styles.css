@@ -697,7 +697,16 @@ body {
 
 .tb-clock   { left: 244.61px; letter-spacing: 0.5px; }
 .tb-weekday { left: 300.61px; white-space: pre; }   /* the design has a double space */
-.tb-date    { left: 464.61px; }
+.tb-date    { left: 492.61px; }   /* the weekday's slot, not the design's 164px.
+     Measured, not guessed: at Manrope 400/12 the seven weekday runs are 144.25 -
+     184.41px wide, and the design parks the date 164px after the weekday's own
+     left edge - so «Понедельник (Армения  GMT+4)» printed 20.41px THROUGH the
+     date and «Воскресенье» 19.03px, two days in seven, on the line a client
+     reads first. Nothing is shrunk and nothing is cut: the date is moved 28px
+     into the 240px of empty bar that sits between it and the calendar chip, so
+     the widest weekday keeps 7.59px of air - the same clearance the design
+     itself leaves on its own Пятница frame (7.30px). The gap the date leaves
+     behind it is still 212px. Every other topbar x is untouched. */
 
 /* the date-range chip — 683:3178 Group 203 */
 .tb-cal-icon,
