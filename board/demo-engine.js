@@ -14,7 +14,7 @@
    TIME. The scenario below is written in REAL operator seconds - a call really
    is two and a half minutes of an operator's day. The board replays it at demo
    speed: every operator's queue is normalised so that all three finish their
-   companies at the same instant, at the end of a 3.5-minute ring. The status
+   companies at the same instant, at the end of a 1.75-minute ring. The status
    timer therefore counts the operator's own real seconds (a call runs 00:00 ->
    02:30, which is where the design's 02:31 comes from) off a wall clock that
    never drifts: it is driven by performance.now(), not by a frame counter. The
@@ -22,13 +22,20 @@
    step, so that a backgrounded tab resumes where it stopped instead of
    fast-forwarding an hour of work in a single frame.
 
-   THE RING IS NOT THE PROJECT. The 3.5-minute ring decides only WHICH company
+   THE RING IS NOT THE PROJECT. The 1.75-minute ring decides only WHICH company
    each operator is on. The four counters and the money hang off it but are not
    reset by it: they climb, company by company, from where the board opens
    toward the plan, and the only thing that ever returns them to zero is the
    period closing - which the board announces in the feed, in the operator rows
    and in the date range before it happens. Nothing on this board moves
    backwards without saying so first.
+
+   THE WHOLE ARC IS FIVE MINUTES. Work, the plan met, the period closed, a new
+   one opened - 288.75 seconds of work and a 16 second hold, and then it starts
+   again, at the same 120 of 175 the page itself opens on. A visitor who stays
+   five minutes sees the entire story once; one who stays ten sees it twice, and
+   the second time is a NEW period, never the old backwards snap: the counters
+   only ever fall through the closing ceremony, and never silently.
 
    THE EVENT LOG runs on the same compressed clock as the operator timers, not
    on the wall clock in the header: a board that replays a month of work in half
@@ -456,9 +463,34 @@
      What the ring does NOT do any more is decide the numbers. It decides which
      company is on screen; the counters live above it and accumulate. */
 
-  var CYCLE_ACTIVE = 195;                              /* seconds of wall clock */
-  var CYCLE_PAUSE  = 15;                               /* only the timers move  */
-  var CYCLE        = CYCLE_ACTIVE + CYCLE_PAUSE;       /* 3.5 minutes           */
+  /* THE RING IS THE ONLY DIAL THE PERIOD HAS. A ring closes twenty companies,
+     always twenty, so
+
+         period work  =  companies still to do  x  CYCLE / 20
+
+     and the same constant sets how fast an operator's row turns, because
+     op.speed is op.total / CYCLE_ACTIVE. There is no third knob: shortening
+     the ring shortens the period by exactly the factor it speeds the rows.
+
+     A period had to come down from twenty-three minutes to five. Measured, the
+     two ends of that trade are both unshippable. Leave the ring at 210 and a
+     period is twenty-seven companies long, so it opens at 148 of 175 - 85 % -
+     in the same breath as the feed says «Новый период» and the window jumps
+     thirty days; a month that has just started cannot be 85 % worked. Keep the
+     period opening at the old forty-two and the ring must run five times
+     faster: a status every half second, 254 changes a minute across three
+     rows, which is the slot machine the board exists not to be.
+
+     Halved, and the period opens at 120 - which is not a compromise but the
+     board's OWN opening state, the accepted frame, three weeks into a thirty
+     day period. Every period now opens exactly as the page opens: fifty-five
+     companies left to do, 288.75 seconds of work, plus the sixteen second hold
+     that does not shrink - 5.08 minutes, and the first arc a visitor sees is
+     the same length as every one after it. The cost is stated where it is
+     paid: the rows turn twice as fast, a status every 1.25 s instead of 2.5. */
+  var CYCLE_ACTIVE = 97.5;                             /* seconds of wall clock */
+  var CYCLE_PAUSE  = 7.5;                              /* only the timers move  */
+  var CYCLE        = CYCLE_ACTIVE + CYCLE_PAUSE;       /* 1.75 minutes          */
 
   /* deterministic, non-harmonic starting points, so the three rows never step
      together; the loop index rotates them, so no two loops look alike */
@@ -589,6 +621,42 @@
      weekday and the date stay the machine's own real Yerevan time - only the
      period's own window travels. */
   var periodShift = 0;
+
+  /* AND IT IS NOT ALLOWED TO TRAVEL FOR EVER. A period is five minutes now, so
+     thirty days a period is 720 days for every hour watched: a board left on a
+     stand is printing dates two years out by the end of a working day, which
+     is the one thing on this screen a client can check against his own
+     calendar and catch. It is bounded to the calendar year the visitor is
+     standing in - the window walks the months of THIS year and then comes back
+     to the earliest one the year still holds.
+
+     Coming back is movement backwards, and backwards is what this board does
+     not do. So it is placed in the only instant where an ending is already
+     being announced: inside openPeriod, the same tick that resets the counters
+     and writes «Новый период: план 175» into the feed. During working time
+     nothing on the board ever moves back - not a counter, not the window.
+
+     The band is recomputed from the machine's own date every time, so it needs
+     no calendar knowledge and cannot rot: in September it runs late January to
+     mid December, in December it runs early January to the end of the month.
+     Wherever the year is short of room the walk is short, never wrong. The
+     opening shift of zero is always allowed even where the year cannot hold it
+     - it is the frame the design signed off, and it is not this rule's to move. */
+  var SHIFT_STEP = 30;
+  var SHIFT_GUARD = 24;                /* a year of steps; the loop cannot run away */
+
+  function shiftInYear(t, s) {
+    var a = shiftDays(t, -20 + s), b = shiftDays(t, 10 + s);
+    return a.y === t.y && b.y === t.y;
+  }
+
+  function nextShift(s) {
+    var t = yerevan(new Date()), n = s + SHIFT_STEP, i;
+    if (shiftInYear(t, n)) return n;
+    n = 0;                             /* back to the board's own opening window */
+    for (i = 0; i < SHIFT_GUARD && shiftInYear(t, n - SHIFT_STEP); i++) n -= SHIFT_STEP;
+    return n;                          /* then on to the earliest the year holds */
+  }
 
   /* Seconds of board time since the engine started, and the rate the event log
      runs at against them. Two board seconds to the wall second is the smallest
@@ -1141,8 +1209,8 @@
      set of twenty fates and puts the three operators back on their phases -
      and touches nothing the client is reading. The whole of the old defect was
      the five lines that used to stand here, handing comp, lpr, inter, offer and
-     the used sum back to their opening values every 210 seconds while a visitor
-     watched the result, and the money already spent, jump backwards. */
+     the used sum back to their opening values on every turn of the ring while a
+     visitor watched the result, and the money already spent, jump backwards. */
   function resetCycle(loop) {
     buildCycle(loop);
     ops.forEach(function (op, i) {
@@ -1320,11 +1388,33 @@
 
   /* A line the board says itself, not one an operator produced. It still counts
      against the repeat rules, so the first ordinary line after a closing does
-     not land on top of one of them. */
+     not land on top of one of them.
+
+     What it must NOT do is touch the starvation clock, and that took measuring
+     to see. The three closing lines borrow three existing event types so that
+     no new colour enters a signed-off palette - «План выполнен» wears the deal
+     green, «Период закрыт» the КП orange, «Новый период» the callback violet -
+     and those three are precisely the rarest and most valuable types the
+     funnel makes. Writing lastKindAt for them tells the mixer that a deal, a
+     proposal and a callback have all just been shown, and wipes the credit the
+     real lines had been accumulating.
+
+     At one close every twenty-three minutes that was nearly free. At one close
+     every five it is charged four times as often, and it was measured: over
+     9 600 board seconds the real «Отправлено КП» went from 57.7 % of the ones
+     produced to 10.2 %, and from 0.094 to 0.031 lines per minute of watching -
+     a two-thirds cut in the single line this board exists to show, and the
+     exact defect the G06 audit of Заход девятый caught in its first form.
+     Dropping the write restores it to 38.8 % and 0.119 a minute. «Выход на
+     ЛПР» is untouched at x0.99 of the rate the funnel produces it, so nothing
+     is flattered to pay for it: the lines that give way are the four common
+     ones, which are shown many times over in any case.
+
+     A closing announcement is not an instance of the funnel event whose colour
+     it borrows. It is the board speaking, and the board is not a proposal. */
   function announce(text) {
     pushFeed(text, hhmmWork());
     runKind = eventKind(text);
-    lastKindAt[runKind] = simT;
     runOp = 0; runOpN = 1;
   }
 
@@ -1366,17 +1456,25 @@
      the next one takes days, and the operators do not sit still through them:
      when the new period's report is opened, its first days are already in the
      books. So the counters do not come back at a bare zero - they come back at
-     the thirty companies those days really produced, dealt from the same rates
-     by the same generator and charged by the same rule. It is also the only way
-     the four chips can be honest on the first screen: one interested lead out
-     of one decision maker is a true 100 %, and it is exactly the number this
-     board was rebuilt to stop printing. */
-  /* Forty-two, not thirty. Thirty opened a period with two interested leads and
-     one proposal, and the КП chip then printed 2 of 3 - a true, arithmetically
-     obvious 67 % that is nevertheless the exact kind of figure this заход
-     exists to keep off the board. Forty-two opens on three or four, which is
-     the smallest denominator that cannot produce one. */
-  var PERIOD_SEED = 42;
+     the companies those days really produced, dealt from the same rates by the
+     same generator and charged by the same rule. It is also the only way the
+     four chips can be honest on the first screen: one interested lead out of
+     one decision maker is a true 100 %, and it is exactly the number this board
+     was rebuilt to stop printing.
+
+     Forty-two was that number while a period ran twenty-three minutes. It is
+     now a hundred and twenty, and the reason is not arithmetic convenience: 120
+     is the state START itself declares - the accepted frame the page opens on,
+     three weeks into the month, 120 of 175 and 69 %. Seeding a new period there
+     makes every period a copy of the first one the visitor ever sees, and it is
+     what buys the five-minute arc without running the operator rows at a speed
+     nobody can read. The four chips are honest by a wide margin at this size:
+     the decision-maker denominator opens near thirty-five, not one.
+
+     What it does NOT change is the rule underneath: these companies are dealt
+     from the same rates by the same generator and charged by the same flat
+     rule, so the seed drifts with the funnel instead of being typed in. */
+  var PERIOD_SEED = 120;                               /* = START.comp, on purpose */
 
   function seedPeriod(loop) {
     var fates = spread(quotaBag(PERIOD_SEED, loop), rng(loop * 6151 + 22307));
@@ -1397,7 +1495,7 @@
 
   function openPeriod() {
     mode = 'run';
-    periodShift += 30;
+    periodShift = nextShift(periodShift);
     seedPeriod(curLoop + 1);
     lastDay = '';                      /* forces the new window onto the board */
     paintClock();
@@ -1448,7 +1546,7 @@
        to throw the pending lines away and forget which type was last shown,
        because everything downstream of it was being reset anyway; now that the
        counters carry over, so does the feed - otherwise the first line after
-       every 210 seconds could, and did, land on top of its own twin. */
+       every ring could, and did, land on top of its own twin. */
     if (loop !== curLoop) { curLoop = loop; resetCycle(loop); }
 
     var active = cyc <= CYCLE_ACTIVE;
