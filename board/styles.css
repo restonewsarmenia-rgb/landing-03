@@ -3044,10 +3044,13 @@ body {
    237px hole on the right against a 19px gap on the left. The two right-hand
    columns are moved so the outer gaps match and the two inner gaps are equal,
    and the column titles move with them. Nothing is resized or restyled. */
-.ops-zone .ops-col[data-node="683:2856"] { left: 880.6088px !important; }
-.ops-zone .ops-col[data-node="683:2857"] { left: 1165.6088px !important; }
-.op-task   { left: 879.6088px; }
-.op-client { left: 1165.6088px; }
+.ops-zone .ops-col[data-node="683:2856"] { left: 870.6088px !important; }
+.ops-zone .ops-col[data-node="683:2857"] { left: 1145.6088px !important; }
+.op-task   { left: 869.6088px; }
+/* The box was 112 wide while the longest company name renders at 126, so the
+   text used to spill into the empty right-hand third. With that space gone the
+   box is widened to fit the widest name and pulled left to keep a 19px margin. */
+.op-client { left: 1145.6088px; width: 132px; }
 
 /* The next-step field is 246 wide and its text sat left with up to 130px of
    empty room after it — the label is centred in its own box instead. */
