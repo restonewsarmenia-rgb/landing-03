@@ -85,7 +85,7 @@
      day period, 120 of the 175 companies processed and 206 000 of the 300 000
      spent. Both are 69 %, which is the design's own accepted frame. From here
      the counters only ever climb. */
-  var START = { comp: 120, lpr: 34, inter: 8, offer: 3, used: 206000 };
+  var START = { comp: 120, lpr: 48, inter: 14, offer: 9, used: 206000 };
 
   /* ------------------------------------------------------------ the funnel
      What a cold outbound project in Armenian B2B really produces, stage by
@@ -117,9 +117,9 @@
      still - and because the counters accumulate, what the client reads is a
      running total that drifts by a point or two, not a flicker. */
   var RATE = {
-    lpr:   { base: 0.290, amp: 0.040, w: 0.70, ph: 0.00 },   /* 25 .. 33 % */
-    inter: { base: 0.230, amp: 0.035, w: 0.43, ph: 1.10 },   /* 20 .. 27 % */
-    offer: { base: 0.400, amp: 0.090, w: 0.31, ph: 2.20 }    /* 31 .. 49 % */
+    lpr:   { base: 0.400, amp: 0.045, w: 0.70, ph: 0.00 },   /* 36 .. 45 % */
+    inter: { base: 0.300, amp: 0.040, w: 0.43, ph: 1.10 },   /* 26 .. 34 % */
+    offer: { base: 0.650, amp: 0.090, w: 0.31, ph: 2.20 }    /* 56 .. 74 % */
   };
 
   function rateAt(r, loop) { return r.base + r.amp * Math.sin(loop * r.w + r.ph); }

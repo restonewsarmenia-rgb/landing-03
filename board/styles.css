@@ -3038,3 +3038,17 @@ body {
 [data-cc-still] #board [data-cc-mode="wave"] svg > path,
 [data-cc-still] #board .cc-in,
 [data-cc-still] #board .cc-bump { animation: none !important; }
+
+/* ---- even spacing inside the operator rows ------------------------------
+   The status field is 762 wide and its content stopped at 1059.6, leaving a
+   237px hole on the right against a 19px gap on the left. The two right-hand
+   columns are moved so the outer gaps match and the two inner gaps are equal,
+   and the column titles move with them. Nothing is resized or restyled. */
+.ops-zone .ops-col[data-node="683:2856"] { left: 880.6088px !important; }
+.ops-zone .ops-col[data-node="683:2857"] { left: 1165.6088px !important; }
+.op-task   { left: 879.6088px; }
+.op-client { left: 1165.6088px; }
+
+/* The next-step field is 246 wide and its text sat left with up to 130px of
+   empty room after it — the label is centred in its own box instead. */
+.op-next { text-align: center; }
